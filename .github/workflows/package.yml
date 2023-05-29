@@ -8,7 +8,6 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-                cache: 'pip'
           - name: Use PIP to Install PyInstaller (Windows)
             run: 'pip install -U pyinstaller'
           - name: Build application with PyInstaller (Windows)
@@ -27,7 +26,6 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-                cache: 'pip'
           - name: Add Files to ZIP (Linux)
             run: 'zip -r -0 vintagestory-modmgr.zip __main__.py basemod.py gui/'
           - name: Convert ZIP to PYZ (Linux)
