@@ -9,8 +9,6 @@ jobs:
             with:
                 python-version: '3.11'
                 cache: 'pip'
-          - name: Use PIP to Install Requirements (Windows)
-            run: 'pip install -r requirements.txt'
           - name: Use PIP to Install PyIsntaller (Windows)
             run: 'pip install -U pyinstaller'
           - name: Build application with PyInstaller (Windows)
@@ -28,8 +26,6 @@ jobs:
             with:
                 python-version: '3.11'
                 cache: 'pip'
-          - name: Use PIP to Install Requirements (Linux)
-            run: 'pip install -r requirements.txt'
           - name: Add Files to ZIP (Linux)
             run: 'zip -r -0 vintagestory-modmgr.zip __main__.py basemod.py gui/'
           - name: Convert ZIP to PYZ (Linux)
