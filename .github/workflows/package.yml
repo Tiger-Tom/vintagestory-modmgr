@@ -9,7 +9,7 @@ jobs:
             with:
                 python-version: '3.11'
                 cache: 'pip'
-          - name: Use PIP to Install PyIsntaller (Windows)
+          - name: Use PIP to Install PyInstaller (Windows)
             run: 'pip install -U pyinstaller'
           - name: Build application with PyInstaller (Windows)
             run: 'PYTHONOPTIMIZE=2 pyinstaller -yF -n vintagestory-modmgr.exe __main__.py'
