@@ -9,7 +9,7 @@ jobs:
             with:
                 python-version: '3.11'
           - name: Build application with PyInstaller (Windows)
-            uses: JackMcKew/pyisntaller-action-windows@main
+            uses: JackMcKew/pyinstaller-action-windows@main
             with:
                 path: .
           - name: Upload Build Artifact (Windows)
