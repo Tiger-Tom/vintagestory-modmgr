@@ -1,4 +1,4 @@
-name: Package_EXE
+name: Package
 on:
     workflow_dispatch:
     push:
