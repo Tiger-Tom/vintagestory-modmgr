@@ -12,7 +12,9 @@ jobs:
           - name: Use PIP to Install PyInstaller (Windows)
             run: 'pip install -U pyinstaller'
           - name: Build application with PyInstaller (Windows)
-            run: 'PYTHONOPTIMIZE=2 pyinstaller -yF -n vintagestory-modmgr.exe __main__.py'
+            run: 'pyinstaller -yF -n vintagestory-modmgr.exe __main__.py'
+            env:
+                PYTHONOPTIMIZE: 2
           - name: Upload Build Artifact (Windows)
             uses: actions/upload-artifact@v3
             with:
