@@ -8,15 +8,15 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-          - name: Install Requirements and PyInstaller (Windows)
+          - name: Install Requirements and PyInstaller
             run: 'pip install -r requirements.txt pyinstaller'
-          - name: Build application with PyInstaller (Windows)
+          - name: Build application with PyInstaller
             run: 'pyinstaller -yF -n vintagestory-modmgr.exe __main__.py'
             env:
                 PYTHONOPTIMIZE: 2
-          - name: Test application (Windows)
+          - name: Test application
             run: 'dist/vintagestory-modmgr.exe --help'
-          - name: Upload Build Artifact (Windows)
+          - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
                 name: vintagestory-modmgr.exe
@@ -28,11 +28,13 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-          - name: Add Files to ZIP (Linux)
+          - name: Add Files to ZIP
             run: 'zip -r -0 vintagestory-modmgr.zip __main__.py basemod.py gui/'
-          - name: Convert ZIP to PYZ (Linux)
+          - name: Convert ZIP to PYZ
             run: 'python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.zip -o vintagestory-modmgr.pyz'
-          - name: Upload Build Artifact (Linux)
+          - name: Test application
+            run: 'python3 vintagestory-modmgr.pyz --help'
+          - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
                 name: vintagestory-modmgr.pyz
