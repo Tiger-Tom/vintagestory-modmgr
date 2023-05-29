@@ -1,0 +1,44 @@
+name: Package_EXE
+on:
+    workflow_dispatch:
+    push:
+        branches: ["main", "master"]
+jobs:
+    build-win-pyinstaller:
+        runs-on: windows-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-python@v4
+            with:
+                python-version: '3.11'
+                cache: 'pip'
+          - name: Use PIP to Install Requirements (Windows)
+            run: 'pip install -r requirements.txt'
+          - name: Use PIP to Install PyIsntaller (Windows)
+            run: 'pip install -U pyinstaller'
+          - name: Build application with PyInstaller (Windows)
+            run: 'PYTHONOPTIMIZE=2 pyinstaller -yF -n vintagestory-modmgr.exe __main__.py'
+          - name: Upload Build Artifact (Windows)
+            uses: actions/upload-artifact@v3
+            with:
+                name: vintagestory-modmgr.exe
+                path: dist/vintagestory-modmgr.exe
+    build-zipapp:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-python@v4
+            with:
+                python-version: '3.11'
+                cache: 'pip'
+          - name: Use PIP to Install Requirements (Linux)
+            run: 'pip install -r requirements.txt'
+          - name: Add Files to ZIP (Linux)
+            run: 'zip -r -0 vintagestory-modmgr.zip __main__.py basemod.py gui/'
+          - name: Convert ZIP to PYZ (Linux)
+            run: 'python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.zip -o vintagestory-modmgr.pyz'
+          - name: Upload Build Artifact (Linux)
+            uses: actions/upload-artifact@v3
+            with:
+                name: vintagestory-modmgr.pyz
+                path: vintagestory-modmgr.pyz
