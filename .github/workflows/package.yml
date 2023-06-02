@@ -2,6 +2,11 @@ name: Package
 on: workflow_dispatch
 jobs:
     build-zipapp:
+        strategy:
+            fail-fast: false
+            matrix:
+              - {info_suffix: 'With GUI', add_dir: 'gui/', executable: 'vintagestory-modmgr-gui.pyz'}
+              - {info_suffix: 'Without GUI', add_dir: '', executable: 'vintagestory-modmgr.pyz'}
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
@@ -16,28 +21,24 @@ jobs:
             with:
                 path: __main__.py
                 contents: 'import main;main.main()'
-          - name: Add Files to Zips
-            run: |
-                zip -r -0 vintagestory-modmgr-gui.zip __main__.py main.py basemod.py modes/ gui/
-                zip -r -0 vintagestory-modmgr.zip     __main__.py main.py basemod.py modes/
+          - name: 'Add Files to Zips ${{ matrix.info_suffix }}'
+            run: 'zip -r -0 ${{ matrix.executable }}.zip __main__.py main.py basemod.py modes/ ${{ matrix.add_dir }}'
           - name: Convert Zips to PYZs
-            run: |
-                python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr-gui.zip -o vintagestory-modmgr-gui.pyz
-                python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.zip -o vintagestory-modmgr.pyz
-          - name: Test applications
-            run: |
-                python3 vintagestory-modmgr-gui.pyz --help
-                python3 vintagestory-modmgr.pyz --help
-          - name: Upload Build Artifacts
+            run: 'python3 -m zipapp -p /usr/bin/python3 ${{ matrix.executable }}.zip -o ${{ matrix.executable }}'
+          - name: 'Test Application ${{ matrix.info_suffix }}'
+            run: 'python3 ${{ matrix.executable }} --help'
+          - name: 'Upload Build Artifact ${{ matrix.info_suffix }}'
             uses: actions/upload-artifact@v3
             with:
-                name: ZipApp (cross-platform)
-                path: vintagestory-modmgr*.pyz
+                name: 'ZipApp (cross-platform) ${{ matrix.info_suffix }}'
+                path: matrix.executable
     build-executable:
         strategy:
+            fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest]
-        runs-on: ${{ matrix.os }}
+                os: [ {name: 'ubuntu-latest', title: 'Linux', executable: 'vintagestory-modmgr{1}'}, {name: 'windows-latest', title: 'Windows', executable: 'vintagestory-modmgr{1}.exe'}, ]
+                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', add_dirs_lin='--add-data "gui/*:gui"', add_dirs_win='"--add-data "gui/*;gui"'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', add_dirs_lin='', add_dirs_win=''} ]
+        runs-on: ${{ matrix.os.name }}
         steps:
           - uses: actions/checkout@v3
           - uses: actions/setup-python@v4
@@ -47,17 +48,20 @@ jobs:
             run: 'pip install -U pyinstaller'
           - name: Install Requirements
             run: 'pip install -r requirements.txt'
-          - if: matrix.os == 'ubuntu-latest'
+          - if: matrix.gui.enabled
+            name: Install PyWebView for GUI
+            run: 'pip install -U pywebview'
+          - if: matrix.os.name == 'ubuntu-latest'
             name: Set Python Optimize (Linux only)
             run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
-          - name: Build application with PyInstaller
+          - name: 'Build application with PyInstaller ${{ matrix.gui.info_suffix }}'
             run: |
-                pyinstaller -yF --add-data "gui/*${{ (matrix.os == 'ubuntu-latest') && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'windows-latest' && '.exe' || '' }} main.py
+                pyinstaller -yF ${{ (matrix.os.name == 'ubuntu-latest') && matrix. || ';' }} -n vintagestory-modmgr${{ matrix.os == 'windows-latest' && '.exe' || '' }} main.py
           - name: Test application
             run: |
-                dist/vintagestory-modmgr${{ (matrix.os == 'windows-latest') && '.exe' || '' }} --help
+                dist/${{ format(matrix.os.executable, matrix.gui.exesuffix }} --help
           - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
-                name: Bundled Executable (${{ (matrix.os == 'ubuntu-latest') && 'Linux' || 'Windows' }})
-                path: dist/vintagestory-modmgr${{ (matrix.os == 'windows-latest') && '.exe' || '' }}
+                name: 'Bundled Executable (${{ matrix.os.title }}) ${{ matrix.gui.info_suffix }}'
+                path: 'dist/${{ format(matrix.os.executable, matrix.gui.exesuffix }}'
