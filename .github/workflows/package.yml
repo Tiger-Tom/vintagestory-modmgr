@@ -49,14 +49,14 @@ jobs:
             run: 'pip install -r requirements.txt'
           - name: Build application with PyInstaller
             run: |
-                pyinstaller -yF --add-data "gui/*${{ matrix.os == 'ubuntu-latest' && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }} main.py
+                pyinstaller -yF --add-data "gui/*${{ (matrix.os == 'ubuntu-latest') && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }} main.py
             env:
                 PYTHONOPTIMIZE: 2
           - name: Test application
             run: |
-                dist/vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }} --help
+                dist/vintagestory-modmgr${{ (matrix.os == 'ubuntu-latest') && '' || '.exe' }} --help
           - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
-                name: vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }}
-                path: dist/vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }}
+                name: Bundled Executable (${{ (matrix.os == 'ubuntu-latest') && 'Linux' || 'Windows' }})
+                path: dist/vintagestory-modmgr${{ (matrix.os == 'ubuntu-latest') && '' || '.exe' }}
