@@ -48,7 +48,7 @@ jobs:
           - name: Install Requirements
             run: 'pip install -r requirements.txt'
           - if: matrix.os == 'ubuntu-latest'
-            name: Set Python Optimizie (Linux only)
+            name: Set Python Optimize (Linux only)
             run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
           - name: Build application with PyInstaller
             run: |
