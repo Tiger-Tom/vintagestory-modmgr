@@ -55,9 +55,9 @@ jobs:
                 pyinstaller -yF --add-data "gui/*${{ (matrix.os == 'ubuntu-latest') && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }} main.py
           - name: Test application
             run: |
-                dist/vintagestory-modmgr${{ (matrix.os == 'ubuntu-latest') && '' || '.exe' }} --help
+                dist/vintagestory-modmgr${{ (matrix.os == 'windows-latest') && '.exe' || '' }} --help
           - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
                 name: Bundled Executable (${{ (matrix.os == 'ubuntu-latest') && 'Linux' || 'Windows' }})
-                path: dist/vintagestory-modmgr${{ (matrix.os == 'ubuntu-latest') && '' || '.exe' }}
+                path: dist/vintagestory-modmgr${{ (matrix.os == 'windows-latest') && '.exe' || '' }}
