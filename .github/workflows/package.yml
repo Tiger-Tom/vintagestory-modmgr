@@ -57,12 +57,12 @@ jobs:
             run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
           - name: 'Build application with PyInstaller ${{ matrix.gui.info_suffix }}'
             run: |
-                pyinstaller -yF ${{ (matrix.os.name == 'ubuntu-latest') && matrix. || ';' }} -n vintagestory-modmgr${{ matrix.os == 'windows-latest' && '.exe' || '' }} main.py
+                pyinstaller -yF ${{ (matrix.os.name == 'ubuntu-latest') && matrix.gui.add_dirs_lin || matrix.gui.add_dirs_win }} -n ${{ format(matrix.os.executable, matrix.gui.exesuffix) }} main.py
           - name: Test application
             run: |
-                dist/${{ format(matrix.os.executable, matrix.gui.exesuffix }} --help
+                dist/${{ format(matrix.os.executable, matrix.gui.exesuffix) }} --help
           - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
                 name: 'Bundled Executable (${{ matrix.os.title }}) ${{ matrix.gui.info_suffix }}'
-                path: 'dist/${{ format(matrix.os.executable, matrix.gui.exesuffix }}'
+                path: 'dist/${{ format(matrix.os.executable, matrix.gui.exesuffix) }}'
