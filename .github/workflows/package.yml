@@ -38,7 +38,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ {name: 'ubuntu-latest', title: 'Linux', executable: 'vintagestory-modmgr{0}'}, {name: 'windows-latest', title: 'Windows', executable: 'vintagestory-modmgr{0}.exe'}, ]
-                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', add_dirs_lin: '--add-data "gui/*:gui"', add_dirs_win: '"--add-data "gui/*;gui"'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', add_dirs_lin: '', add_dirs_win: ''} ]
+                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', add_dirs_lin: '--add-data "gui/*:gui"', add_dirs_win: '--add-data "gui/*;gui"'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', add_dirs_lin: '', add_dirs_win: ''} ]
         runs-on: ${{ matrix.os.name }}
         steps:
           - uses: actions/checkout@v3
