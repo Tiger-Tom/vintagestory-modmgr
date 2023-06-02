@@ -41,7 +41,7 @@ class BaseHook:
         '''called before webview.create_window, return value updates default kwargs'''
         eprint('Window about to be created')
         return {}
-    def post_window_created(self, w: webview.Window):
+    def post_window_created(self, w: 'webview.Window'):
         '''called after webview.create_window'''
         eprint(f'Window created: {w}')
         self.window = w
