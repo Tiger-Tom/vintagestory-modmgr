@@ -52,7 +52,7 @@ jobs:
             run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
           - name: Build application with PyInstaller
             run: |
-                pyinstaller -yF --add-data "gui/*${{ (matrix.os == 'ubuntu-latest') && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'ubuntu-latest' && '' || '.exe' }} main.py
+                pyinstaller -yF --add-data "gui/*${{ (matrix.os == 'ubuntu-latest') && ':' || ';' }}gui" -n vintagestory-modmgr${{ matrix.os == 'windows-latest' && '.exe' || '' }} main.py
           - name: Test application
             run: |
                 dist/vintagestory-modmgr${{ (matrix.os == 'windows-latest') && '.exe' || '' }} --help
