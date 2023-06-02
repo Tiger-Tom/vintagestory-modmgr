@@ -1,0 +1,96 @@
+/* ALL */
+*[disabled] {
+    cursor: not-allowed !important;
+    text-decoration-line: strikethrough;
+}
+/* BODY */
+body {
+    background-color: #383838;
+    color: #CCCCCC; /* FOR TEXT */
+}
+/* TEXT */
+/*t, b, p {
+    color: #CCCCCC;
+}*/
+/* DIVS & TABLES */
+div, table {
+    color: #CCCCCC; /* FOR TEXT */
+}
+/* INPUT */
+input {
+    border-radius: 5px 5px;
+    background-color: #858585;
+}
+input[type=text], input[type=password], input[type=search] { /* TEXT */
+    border: 1px solid #000000;
+    height: 30px;
+}
+input[type=date], input[type=datetime-local], input[type=month], input[type=time], input[type=week] { /* DATE */
+    border: 1px solid #00CC00;
+    height: 30px;
+}
+input[type=email], input[type=tel] { /* CONTACT */
+    border: 1px solid #00FFFF;
+    height: 30px;
+}
+input[type=number] { /* NUMBER */
+    border: 1px solid #FFFF00;
+    height: 30px;
+}
+input[type=file], input[type=image] { /* FILE */
+    border: 1px solid #FF00FF;
+}
+input[type=url] { /* URL */
+    border: 1px solid #0000FF;
+    height: 30px;
+}
+/* ANCHOR */
+a { /* DEFAULT */
+    color: #03ADFC;
+    text-decoration-line: none;
+    padding-right: 0px;
+    border-right: 0px rgba(252, 175, 80, 0.2) ridge;
+    transition: padding-right 1s, border-right 1s;
+}
+a[style="text-align: center"] {
+    padding-left: 0px;
+    transition: padding-right 1s, padding-left 1s, border-right 1s;
+}
+a:visited { /* VISITED LINK */
+    color: #03ADFC;
+}
+a:hover { /* MOUSE OVER */
+    cursor: pointer;
+    color: #4CAF50;
+    padding-right: 4px;
+    border-right: 5px rgba(252, 175, 80, 0.6) ridge;
+    transition: padding-right 1s, border-right 1s, color 1s;
+}
+a:hover[target='_blank'] {
+    cursor: alias;
+}
+a:hover[style='text-align: center'] {
+    padding-left: 9px;
+    transition: padding-right 1s, padding-left 1s, border-right 1s, color 1s;
+}
+/* BUTTONS */
+button { /* BASE */
+    transition-duration: 0.42s;
+    letter-spacing: 1px;
+    border-radius: 12px 10px;
+    /*width: 100%;*/
+    height: 30px;
+    background-color: #4D4D4D;
+    color: #FFFFFF;
+}
+button:hover { /* MOUSE OVER */
+    background-color: #333333;
+    cursor: pointer;
+}
+button:active { /* CLICKED ON */
+    background-color: #202020;
+}
+button:disabled { /* DISABLED (UNUSABLE) */
+    text-decoration: line-through;
+    cursor: not-allowed;
+}

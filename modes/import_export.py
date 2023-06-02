@@ -9,7 +9,7 @@ from packaging.version import Version # version comparison
 from basemod import Mod
 #</Imports
 
-#> Header
+#> Header >/
 eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 
 # Import
