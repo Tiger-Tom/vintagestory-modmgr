@@ -9,6 +9,8 @@ jobs:
             with:
                 python-version: '3.11'
                 cache: 'pip'
+          - name: Install requirements
+            run: 'pip install -r requirements.txt'
           - name: Create Runner File __main__.py
             uses: DamianReeves/write-file-action@v1.2
             with:
