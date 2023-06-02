@@ -5,8 +5,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-              - {info_suffix: 'With GUI', add_dir: 'gui/', executable: 'vintagestory-modmgr-gui.pyz'}
-              - {info_suffix: 'Without GUI', add_dir: '', executable: 'vintagestory-modmgr.pyz'}
+                gui:
+                  - {info_suffix: 'With GUI', add_dir: 'gui/', executable: 'vintagestory-modmgr-gui.pyz'}
+                  - {info_suffix: 'Without GUI', add_dir: '', executable: 'vintagestory-modmgr.pyz'}
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
@@ -21,17 +22,17 @@ jobs:
             with:
                 path: __main__.py
                 contents: 'import main;main.main()'
-          - name: 'Add Files to Zips ${{ matrix.info_suffix }}'
-            run: 'zip -r -0 ${{ matrix.executable }}.zip __main__.py main.py basemod.py modes/ ${{ matrix.add_dir }}'
+          - name: 'Add Files to Zips ${{ matrix.gui.info_suffix }}'
+            run: 'zip -r -0 ${{ matrix.gui.executable }}.zip __main__.py main.py basemod.py modes/ ${{ matrix.gui.add_dir }}'
           - name: Convert Zips to PYZs
-            run: 'python3 -m zipapp -p /usr/bin/python3 ${{ matrix.executable }}.zip -o ${{ matrix.executable }}'
-          - name: 'Test Application ${{ matrix.info_suffix }}'
-            run: 'python3 ${{ matrix.executable }} --help'
-          - name: 'Upload Build Artifact ${{ matrix.info_suffix }}'
+            run: 'python3 -m zipapp -p /usr/bin/python3 ${{ matrix.gui.executable }}.zip -o ${{ matrix.gui.executable }}'
+          - name: 'Test Application ${{ matrix.gui.info_suffix }}'
+            run: 'python3 ${{ matrix.gui.executable }} --help'
+          - name: 'Upload Build Artifact ${{ matrix.gui.info_suffix }}'
             uses: actions/upload-artifact@v3
             with:
-                name: 'ZipApp (cross-platform) ${{ matrix.info_suffix }}'
-                path: matrix.executable
+                name: 'ZipApp (cross-platform) ${{ matrix.gui.info_suffix }}'
+                path: matrix.gui.executable
     build-executable:
         strategy:
             fail-fast: false
