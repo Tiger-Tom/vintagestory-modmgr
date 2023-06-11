@@ -32,7 +32,7 @@ jobs:
             uses: actions/upload-artifact@v3
             with:
                 name: 'ZipApp (cross-platform) ${{ matrix.gui.info_suffix }}'
-                path: matrix.gui.executable
+                path: '${{ matrix.gui.executable }}'
     build-executable:
         strategy:
             fail-fast: false
