@@ -37,8 +37,8 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ {name: 'ubuntu-latest', title: 'Linux', executable: 'vintagestory-modmgr{0}'}, {name: 'windows-latest', title: 'Windows', executable: 'vintagestory-modmgr{0}.exe'}, ]
-                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', add_dirs_lin: '--add-data "gui/*:gui"', add_dirs_win: '--add-data "gui/*;gui"'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', add_dirs_lin: '', add_dirs_win: ''} ]
+                os: [ {name: 'ubuntu-latest', title: 'Linux', executable: 'vintagestory-modmgr{0}'}, {name: 'windows-latest', title: 'Windows', executable: 'vintagestory-modmgr{0}.exe'}, {name: 'macos-latest', title: 'MacOS', executable: 'vintagestory-modmgr{0}'} ]
+                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', add_dirs_unix: '--add-data "gui/*:gui"', add_dirs_win: '--add-data "gui/*;gui"'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', add_dirs_unix: '', add_dirs_win: ''} ]
         runs-on: ${{ matrix.os.name }}
         steps:
           - uses: actions/checkout@v3
@@ -57,7 +57,7 @@ jobs:
             run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
           - name: 'Build application with PyInstaller ${{ matrix.gui.info_suffix }}'
             run: |
-                pyinstaller -yF ${{ (matrix.os.name == 'ubuntu-latest') && matrix.gui.add_dirs_lin || matrix.gui.add_dirs_win }} -n ${{ format(matrix.os.executable, matrix.gui.exesuffix) }} main.py
+                pyinstaller -yF ${{ (matrix.os.name == 'windows-latest') && matrix.gui.add_dirs_win || matrix.gui.add_dirs_unix }} -n ${{ format(matrix.os.executable, matrix.gui.exesuffix) }} main.py
           - name: Test application
             run: |
                 dist/${{ format(matrix.os.executable, matrix.gui.exesuffix) }} --help
