@@ -58,8 +58,8 @@ jobs:
             matrix:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   spec: 'linux-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'l'}
-                  - {name: 'windows-latest', title: 'Windows', spec: 'windows-{0}_gui.spec', exec: 'vintagestory-modmgr{0}.exe', id: 'w'}
-                  - {name: 'macos-latest',   title: 'MacOS',   spec: 'macos-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'm'}
+                  #- {name: 'windows-latest', title: 'Windows', spec: 'windows-{0}_gui.spec', exec: 'vintagestory-modmgr{0}.exe', id: 'w'}
+                  #- {name: 'macos-latest',   title: 'MacOS',   spec: 'macos-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'm'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
@@ -79,6 +79,9 @@ jobs:
             run: pip install -U pyinstaller
           - name: Install Requirements
             run: pip install -r requirements.txt
+            # Debug
+          - name: Debug [tree]
+            run: tree
             # Build Sans GUI
           - name: Run PyInstaller Spec Sans GUI For ${{ matrix.os.title }}
             run: pyinstaller ${{ format(matrix.os.spec, 'sans') }}
