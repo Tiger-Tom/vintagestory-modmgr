@@ -1,0 +1,3 @@
+_config.debug$attach_key = 1
+_config.debug$attach_src = 1
+_config.debug$quote_val  = 1

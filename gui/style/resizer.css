@@ -1,0 +1,33 @@
+.resizer-outer {
+    /* Background & Border */
+    margin-top: -3pt; /* clingy */
+    border-radius: 10px;
+    background-color: #4D4D4D80;
+    /* Size */
+    width: 100%;
+    height: 8pt;
+    /* Alignment */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Etc. */
+    transition-duration: 0.42s;
+    cursor: ns-resize;
+}
+.resizer-outer:hover {
+    background-color: #333333C0;
+}
+.resizer-outer:active {
+    background-color: #333333C0;
+    cursor: grabbing;
+}
+
+.resizer-inner {
+    /* Background & Border */
+    background-color: transparent;
+    border-top: 1pt ridge #FFFFFFFF;
+    border-bottom: 1pt ridge #FFFFFFFF;
+    /* Size */
+    width: 32px;
+    height: 3pt;
+}

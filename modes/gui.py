@@ -1,17 +1,42 @@
-#!/bin/python
+#> Setup PyI_Splash
+# PyInstaller splash screen control
+try:
+    import pyi_splash
+    def splash(text_or_cmd: str | bool) -> bool | Exception:
+        # False closes splash, str updates text; returns success or exception
+        if not pyi_splash.is_alive(): return False
+        try:
+            if text_or_cmd is False:
+                pyi_splash.close(); return True
+            if 'os' in dir():
+                text_or_cmd += f'\n{getattr(os, "getlogin", lambda: "(login name unknown)")()} | {os.getcwd()}'
+                if hasattr(os, 'uname'): text_or_cmd += f'\n{os.uname()}'
+                else: text_or_cmd += 'os.name'
+            if 'sys' in dir():
+                text_or_cmd += f'\n{" ".join(sys.argv)}'
+            pyi_splash.update_text(text_or_cmd)
+            return True
+        except Exception as e: return e
+except ModuleNotFoundError: splash = lambda _: None
+#</Setup PyI_Splash
 
 #> Imports
+splash('Importing modules: sys, os')
 import sys, os                 # basic system libraries
+splash('Importing modules: importlib.machinery')
 import importlib.machinery     # import GU/API modules
+splash('Importing modules: argparse')
 import argparse                # typehints
+splash('Importing modules: webview')
 try: import webview            # HTML/CSS/JS GUI
 except Exception as e: webview = e
-
+splash('Importing modules: base GU/API (if possible)')
 try:
-    from modes import d_guapi  # default Graphical User / Application Protocol Interface
-except Exception as e: d_guapi = e
-
+    from gui import guapi      # default Graphical User / Application Protocol Interface
+except Exception as e: guapi = e
+splash('Importing modules: mod interface')
 from basemod import Mod
+splash('All modules imported')
 #</Imports
 
 #> Setup
@@ -22,46 +47,48 @@ builtin_gui_dir = os.path.join('gui', 'index.html') if not am_frozed else os.pat
 #</Setup
 
 #> Base Hooks
+splash('Setting up: base hook')
 class BaseHook:
-    __slots__ = ('ns', 'Mod', 'guapi', 'window', 'webview')
-    def __init__(self, ns: argparse.Namespace):
-        self.ns = ns; self.Mod = Mod
+    __slots__ = ('ns', 'frozen', 'splash', 'Mod', 'guapi', 'window', 'webview')
+    def __init__(self, ns: argparse.Namespace, is_frozen: bool, splash=splash):
+        self.ns = ns; self.Mod = Mod; self.frozen = is_frozen
         self.guapi = None; self.window = None; self.webview = None
-        eprint('Hook instantiated')
-
+        eprint(f'Hook instantiated; frozen?: {is_frozen}'); self.splash = splash
+        self.splash('Hooks have been set up and will take control of splashes')
     def pre_api_create(self):
         '''called before the GU/API, returns kwargs for GUAPI.__init__'''
-        eprint('GU/API about to be created')
-        return {}
+        eprint('GU/API about to be created'); self.splash('Setting up GU/API')
+        return {}#{'initial_dir': initial_dir}
     def post_api_create(self, guapi: 'GUAPI'):
         '''called after the GU/API is created'''
-        eprint(f'GU/API created: {guapi}')
+        eprint(f'GU/API created: {guapi}'); self.splash('Finished setting up GU/API')
         self.guapi = guapi
     def pre_window_created(self):
         '''called before webview.create_window, return value updates default kwargs'''
-        eprint('Window about to be created')
+        eprint('Window about to be created'); self.splash('Setting up window')
         return {}
     def post_window_created(self, w: 'webview.Window'):
         '''called after webview.create_window'''
-        eprint(f'Window created: {w}')
+        eprint(f'Window created: {w}'); self.splash('Finished setting up window')
         self.window = w
-    def pre_webview_start(self, wv: webview):
+    def pre_webview_start(self, wv: 'webview'):
         '''called before webview.start, return value updates default kwargs'''
-        eprint(f'WebView about to start: {wv}')
+        eprint(f'WebView about to start: {wv}'); self.splash('Setting up Python WebView')
         self.webview = wv
         return {}
     def as_webview_start(self):
         '''called by webview.start as func=, unless it was overridden by pre_webview_start'''
-        eprint(f'WebView is starting/ed')
-    def post_webview_start(self, wv: webview):
+        eprint(f'WebView is starting/ed'); self.splash('Python WebView started')
+        self.splash(False)
+    def post_webview_start(self, wv: 'webview'):
         '''called after webview.start'''
         eprint(f'WebView was started: {wv}')
         self.webview = wv
 
     def uncaught_exception(self, e: Exception):
-        '''whenever an uncaught exception occurs during any of the following:
+        '''called whenever an uncaught exception occurs during any of the following:
             self.pre_api_create
-            guapi.GUAPI.__init__
+            GUAPI.__init__
             self.post_api_create
             self.pre_window_created
             webview.create_window
@@ -70,46 +97,75 @@ class BaseHook:
             webview.start
             self.post_webview_start'''
         eprint(f'Uncaught exception: {e}')
-        input('Press enter to close') # input to allow GUI users to see error in console before it closes
         raise e
 #</Base Hooks
 
 #> Header >/
+splash('Detecting webkit cache')
+if os.name == 'nt': cache_err = 'you are running Windows'
+else:
+    cache_dir_base = os.path.expanduser(f'~/.cache/{os.path.basename(sys.argv[0])}')
+    if os.path.exists(f'{cache_dir_base}/CacheStorage') and os.path.exists(f'{cache_dir_base}/WebKitCache'):
+        cache_err = False
+    else: cache_err = f'{cache_dir_base} does not appear to exist'
+splash('Setting up add_arguments function')
 def add_arguments(p: argparse.ArgumentParser):
+    splash('Parsing arguments')
     if webview is False:
-        p.description = 'GUI mode cannot be used without webview. Try `pip install webview` or otherwise installing python-webview?'
+        p.description = 'GUI mode cannot be used without webview. Try `pip install webview` or otherwise installing python-pywebview?'
         return
     if os.path.exists(builtin_gui_dir):
-        p.add_argument('gui_file', metavar='path', nargs='?', default=builtin_gui_dir, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
-    else: p.add_argument('gui_file', metavar='path', help='The GUI file (or URI) to serve')
+        p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
+    else: p.add_argument('-g', '--gui', metavar='path', required=True, help='The GUI file (or URI) to serve')
     p.add_argument('-s', '--http-server', metavar='port', default=False, type=int, help='If provided, the web GUI and API will be served on a local HTTP server at the port (not recommended due to security concerns)')
     p.add_argument('-d', '--debug', action='store_true', help='Start PyWebView with debug=True, opening/enabling inspect tools and JS console')
-    p.add_argument('--guapi', '--api', default=None, help='The Python module of the API to provide to the GUI (GU/API) (defaults to modes/guapi.py). Additionally, this file provides ')
+    if not cache_err: p.add_argument('--clear-cache', action='store_true', help=f'Tries to clear the cache on Linux by removing {cache_dir_base}')
+    else: p.add_argument('--clear-cache', action='store_const', const=False, default=False, help=f'Would clear the cache, but currently has no effect because {cache_err}')
+    p.add_argument('--guapi', '--api', default=None, help='The Python module of the API to provide to the GUI (GU/API) (defaults to modes/guapi.py). Additionally, this file provides hooks that can modify the way the program behaves in various ways')
+    #p.add_argument('initial_dir', metavar='path', nargs='?', default=None, help='The directory to start in (optional)')
+splash('Setting up command function')
 def command(ns: argparse.Namespace):
+    # Remove cache if needed
+    splash('Checking if cache needs to be removed')
+    if ns.clear_cache:
+        splash('Removing cache')
+        import shutil
+        for c in (f'{cache_dir_base}/CacheStorage', f'{cache_dir_base}/WebKitCache'):
+            eprint(f'Clearing cache: deleting {c}'); splash(f'Removing cache: {c}')
+            shutil.rmtree(c)
     # Check for errors
+    splash('Verifying')
     if isinstance(webview, Exception):
         eprint('Cannot execute GUI, Python WebView does not appear to have been installed or properly loaded:'); eprint(webview)
-        input('Press enter to close'); exit(2)
-    if not os.path.exists(ns.gui_file):
-        eprint(f'{ns.gui_file} does not exist, can not continue')
-        input('Press enter to close'); exit(1) # input to allow GUI users to see error in console before it closes
+        splash('Python WebView was not installed or properly loaded'); exit(2)
+    if not os.path.exists(ns.gui):
+        eprint(f'{ns.gui} does not exist, can not continue')
+        splash(f'{ns.gui} does not exist, can not continue'); exit(1)
     # Get GU/API
+    splash('Loading GU/API')
     if ns.guapi is None:
-        guapi = d_guapi
-        if isinstance(guapi, Exception):
-            eprint('Builtin API could not be loaded:'); eprint(guapi)
-            input('Press enter to close'); exit(1);
+        splash('Loading builtin GU/API')
+        gpi = guapi
+        if isinstance(gpi, Exception):
+            eprint('Builtin GU/API could not be loaded:'); eprint(gpi)
+            splash('Builtin GU/API could not be loaded'); exit(1);
     else:
         try:
-            guapi = importlib.machinery.SourceFileLoader('guapi', ns.api).load_module()
+            splash(f'Loading external GU/API from {ns.guapi}')
+            gpi = importlib.machinery.SourceFileLoader('guapi', ns.guapi).load_module()
         except Exception as e:
-            eprint(f'Cannot get GU/API module from {ns.api}:')
-            eprint(e); input('Press enter to close'); exit(1)
-    if hasattr(guapi, 'hook_factory'): hook = guapi.hook_factory(BaseHook)(ns)
-    else: hook = BaseHook(ns)
-    try:
-        ga = guapi.GUAPI(**hook.pre_api_create()); hook.post_api_create(ga)
-        hook.post_window_created(webview.create_window(**({'url': ns.gui_file, 'js_api': ga} | hook.pre_window_created())))
+            eprint(f'Cannot get GU/API module from {ns.guapi}:'); eprint(e)
+            splash(f'External GU/API {ns.guapi} could not be loaded'); exit(1)
+    splash('Setting up hooks')
+    if hasattr(gpi, 'hook_factory'): hook = gpi.hook_factory(BaseHook)(ns, am_frozed, splash)
+    else: hook = BaseHook(ns, am_frozed)
+    #try:
+    if True: ####################### traceback
+        splash('Setting up GU/API')
+        ga = gpi.GUAPI(**({'mod': Mod} | hook.pre_api_create())); hook.post_api_create(ga)
+        splash('Creating window')
+        hook.post_window_created(webview.create_window(**({'url': ns.gui, 'js_api': ga} | hook.pre_window_created())))
+        
         webview.start(**{'func': hook.as_webview_start, 'debug': ns.debug, 'http_server': (ns.http_server is not None), 'http_port': ns.http_server} | hook.pre_webview_start(webview))
         hook.post_webview_start(webview)
-    except Exception as e: hook.uncaught_exception(e)
+    #except Exception as e: hook.uncaught_exception(e)

@@ -1,5 +1,3 @@
-#!/bin/python
-
 #> Imports
 import os, sys                        # basic system libraries
 import argparse                       # type hinting
@@ -41,7 +39,7 @@ def command(ns: argparse.Namespace):
         eprint('Nothing to do - couldn\'t find any mods to update'); return
     eprint(f'Found {len(mods)} mod(s)')
     metas = Mod.multiget_upstream_releases(mods, nthreads=ns.threads, url=ns.api_url,
-        callback_start=lambda m: eprint(f'Fetching mod info for {m.modid}'), callback_done=lambda m: eprint(f'Got mod info for {m.modid}'))
+        callback_start=lambda m: eprint(f'Fetching mod info for {m.id}'), callback_done=lambda m: eprint(f'Got mod info for {m.id}'))
     candidates = {}
     for m,rs in metas:
         for r in rs:

@@ -1,5 +1,3 @@
-#!/bin/python
-
 #> Imports
 import os, sys                        # basic system libraries
 import argparse                       # type hinting
@@ -16,7 +14,7 @@ eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('-i', '--interactive', action='store_true', help='Ask before downloading each mod (somewhat unneeded with --auto-ask)')
     p.add_argument('-t', '--threads', default=0, metavar='threads', type=int, help='How many threads to use for querying mod information and downloading mods (default: 0, which means infinite)')
-    p.add_argument('--exclude', metavar='modid', default=[], action='append', help='Add a mod ID to not be imported (can be used multiple times)')
+    p.add_argument('-e', '--exclude', metavar='modid', default=[], action='append', help='Add a mod ID to not be imported (can be used multiple times)')
     p.add_argument('--release', default='auto', choices=('auto', 'auto_ask', 'latest', 'ask'), help='Which release of the mod to install. "auto" (the default) and "auto_ask" check if it\'s specified in the file, or gets the latest if it isn\'t for "auto" and asks for "auto_ask", "ask" and "latest" are self-explanatory')
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
@@ -25,9 +23,9 @@ def add_import_arguments(p: argparse.ArgumentParser):
 def import_command(ns: argparse.Namespace):
     installs = {}
     for m,rs in Mod.multiget_upstream_releases(
-            (m for m in Mod.import_list(json.load(ns.import_file)) if m.modid not in ns.exclude),
+            (m for m in Mod.import_list(json.load(ns.import_file)) if m.id not in ns.exclude),
             nthreads=ns.threads, url=ns.api_url,
-            callback_start=lambda m: eprint(f'Fetching mod info for {m.modid}'), callback_done=lambda m: eprint(f'Got mod info for {m.modid}')):
+            callback_start=lambda m: eprint(f'Fetching mod info for {m.id}'), callback_done=lambda m: eprint(f'Got mod info for {m.id}')):
         eprint(m)
         if ns.release in {'auto', 'auto_ask'}:
             if m.version is None: eprint('Mod has no version, cannot auto')
@@ -65,21 +63,23 @@ def import_command(ns: argparse.Namespace):
 # Export
 def add_export_arguments(p: argparse.ArgumentParser):
     p.add_argument('-o', '--output', default=sys.stdout, metavar='path', help='Where to write the .vsmmgr file to (writes to StdOut if not given)')
-    p.add_argument('-e', '--exclude', default=[], action='append', help='Add a mod ID to not be exported (can be used multiple times)')
+    p.add_argument('-e', '--exclude', metavar='modid', default=[], action='append', help='Add a mod ID to not be exported (can be used multiple times)')
     p.add_argument('--overwrite', action='store_true', help='Overwrite the output file if it already exists')
     p.add_argument('--strip-version', action='store_true', help='Don\'t include version numbers')
     p.add_argument('--error-behavior', metavar='mode', choices=('ask', 'ignore', 'fail'), default='ask', help='How to behave when an error is encountered (default: "ask")')
-    p.add_argument('--minimize', action='store_true', help='Make the output as small as possible (smaller when combined with --strip-version) (not pretty-printing) and single-lined')
+    p.add_argument('--minimize', action='store_true', help='Make the output as small (smaller when combined with --strip-version) as possible (AKA not pretty-printing) and single-lined')
     p.add_argument('path', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory')
 
 def export_command(ns: argparse.Namespace):
-    if isinstance(ns.output, str):
-        if os.path.isdir(ns.output): ns.out = os.path.join(ns.output, 'modlist.vsmmgr')
-        if (not ns.overwrite) and os.path.exists(ns.output):
-            eprint(f'Destination "{ns.output}" already exists, use --overwrite to overwrite')
+    out = ns.output
+    if isinstance(out, str):
+        if os.path.isdir(out):
+            print(out)
+            out = os.path.join(out, f'{os.path.basename(os.path.abspath(ns.path))}.vsmmgr')
+        if (not ns.overwrite) and os.path.exists(out):
+            eprint(f'Destination "{out}" already exists, use --overwrite to overwrite')
             exit(1)
-        out = open(ns.output, 'w')
-    else: out = ns.output
+        out = open(out, 'w')
     mods = []
     miter = Mod.from_directory(ns.path)
     eprint('Searching for mods')

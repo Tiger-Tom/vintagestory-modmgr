@@ -6,7 +6,8 @@
 /* BODY */
 body {
     background-color: #383838;
-    color: #CCCCCC; /* FOR TEXT */
+    /*color: #CCCCCC; /* FOR TEXT */
+    color: #FCF5E7;
 }
 /* TEXT */
 /*t, b, p {

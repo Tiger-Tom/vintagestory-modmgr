@@ -1,13 +1,12 @@
 name: Package
 on: workflow_dispatch
+
+env:
+    PYTHON_OPTIMIZE: 2
+
 jobs:
     build-zipapp:
-        strategy:
-            fail-fast: false
-            matrix:
-                gui:
-                  - {info_suffix: 'With GUI', add_dir: 'gui/', executable: 'vintagestory-modmgr-gui.pyz'}
-                  - {info_suffix: 'Without GUI', add_dir: '', executable: 'vintagestory-modmgr.pyz'}
+        name: 'Create ZipApp'
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
@@ -22,47 +21,95 @@ jobs:
             with:
                 path: __main__.py
                 contents: 'import main;main.main()'
-          - name: 'Add Files to Zips ${{ matrix.gui.info_suffix }}'
-            run: 'zip -r -0 ${{ matrix.gui.executable }}.zip __main__.py main.py basemod.py modes/ ${{ matrix.gui.add_dir }}'
-          - name: Convert Zips to PYZs
-            run: 'python3 -m zipapp -p /usr/bin/python3 ${{ matrix.gui.executable }}.zip -o ${{ matrix.gui.executable }}'
-          - name: 'Test Application ${{ matrix.gui.info_suffix }}'
-            run: 'python3 ${{ matrix.gui.executable }} --help'
-          - name: 'Upload Build Artifact ${{ matrix.gui.info_suffix }}'
+          - name: 'Add Files to Zips'
+            run: 'zip -r -0 vintagestory-modmgr.pyz.zip __main__.py main.py basemod.py modes/ gui/ LICENSE'
+          - name: Convert Zip to PYZs
+            run: 'python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz'
+          - name: 'Test Application'
+            run: 'python3 vintagestory-modmgr.pyz --help'
+          - name: 'Upload Build Artifact'
             uses: actions/upload-artifact@v3
             with:
-                name: 'ZipApp (cross-platform) ${{ matrix.gui.info_suffix }}'
-                path: '${{ matrix.gui.executable }}'
+                name: 'ZipApp (cross-platform, requires Python to be installed)'
+                path: vintagestory-modmgr.pyz
+    setup-bundle-specs:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-python@v4
+            with:
+                python-version: '3.11'
+                cache: 'pip'
+          - name: Install PyInstaller
+            run: 'pip install -U pyinstaller'
+          - name: Generate PyInstaller Spec Files
+            working-directory: ./bundle
+            run: './genspec.sh'
+          - name: Upload Spec Artifacts
+            uses: actions/upload-artifact@v3
+            with:
+                name: PyInstaller Spec Files
+                path: ./bundle/specs/*.spec
     build-executable:
+        needs: setup-bundle-specs
         strategy:
             fail-fast: false
             matrix:
-                os: [ {name: 'ubuntu-latest', title: 'Linux', executable: 'vintagestory-modmgr{0}'}, {name: 'windows-latest', title: 'Windows', executable: 'vintagestory-modmgr{0}.exe'}, {name: 'macos-latest', title: 'MacOS', executable: 'vintagestory-modmgr{0}'} ]
-                gui: [ {enabled: true, exesuffix: '-gui', info_suffix: 'With GUI', args_unix: '--add-data "gui/*:gui" --windowed', args_win: '--add-data "gui/*;gui" --windowed'}, {enabled: false, exesuffix: '', info_suffix: 'Without GUI', args_unix: '', args_win: ''} ]
+                os:
+                  - {name: 'ubuntu-latest',  title: 'Linux',   spec: 'linux-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'l'}
+                  - {name: 'windows-latest', title: 'Windows', spec: 'windows-{0}_gui.spec', exec: 'vintagestory-modmgr{0}.exe', id: 'w'}
+                  - {name: 'macos-latest',   title: 'MacOS',   spec: 'macos-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'm'}
+        name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
           - uses: actions/checkout@v3
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
+          - name: Fetch PyInstaller Specs
+            uses: actions/download-artifact@v3
+            with:
+                name: PyInstaller Spec Files
+            # Install required libraries
+          - name: Install UPX
+            if: matrix.os.id != 'm'
+            uses: crazy-max/ghaction-upx@v2
           - name: Install PyInstaller
             run: 'pip install -U pyinstaller'
           - name: Install Requirements
             run: 'pip install -r requirements.txt'
-          - if: matrix.gui.enabled
-            name: Install PyWebView for GUI
-            run: 'pip install -U pywebview'
-          - if: matrix.os.name == 'ubuntu-latest'
-            name: Set Python Optimize (Linux only)
-            run: 'echo "PYTHONOPTIMIZE=2" >> $GITHUB_ENV'
-          - name: 'Build application with PyInstaller ${{ matrix.gui.info_suffix }}'
-            run: |
-                pyinstaller -yF ${{ (matrix.os.name == 'windows-latest') && matrix.gui.args_win || matrix.gui.args_unix }} -n ${{ format(matrix.os.executable, matrix.gui.exesuffix) }} main.py
-          - name: Test application
-            run: |
-                dist/${{ format(matrix.os.executable, matrix.gui.exesuffix) }} --help
-          - name: Upload Build Artifact
+            # Build Sans GUI
+          - name: 'Run PyInstaller Spec Sans GUI For ${{ matrix.os.title }}'
+            run: 'pyinstaller ${{ format(matrix.os.spec, "sans") }}'
+            # Install GUI library
+          - name: Install PyWebView (GUI)
+            run: pip install -U pywebview
+            # Build Avec GUI
+          - name: 'Run PyInstaller Spec Avec GUI For ${{ matrix.os.title }}'
+            run: 'pyinstaller ${{ format(matrix.os.spec, "avec") }}'
+            # Upload artifacts
+            ## Sans GUI
+          - name: 'Upload ${{ matrix.os.title }} Executable Artifact Sans GUI'
             uses: actions/upload-artifact@v3
             with:
-                name: 'Bundled Executable (${{ matrix.os.title }}) ${{ matrix.gui.info_suffix }}'
-                path: 'dist/${{ format(matrix.os.executable, matrix.gui.exesuffix) }}'
+                name: '${{ matrix.os.title }} Binary Sans GUI'
+                path: 'dist/${{ format(matrix.os.exec, "") }}'
+            ## Avec GUI
+          - name: 'Upload ${{ matrix.os.title }} Executable Artifact Avec GUI'
+            uses: actions/upload-artifact@v3
+            with:
+                name: '${{ matrix.os.title }} Binary Avec GUI'
+                path: 'dist/${{ format(matrix.os.exec, "-gui") }}'
+            
+          - name: Upload MacOS App Artifact Sans GUI
+            if: matrix.os.id == 'm'
+            uses: actions/upload-artifact@v3
+            with:
+                name: 'MacOS App Sans GUI'
+                path: 'dist/${{ format(matrix.os.exec, "") }}'
+          - name: Upload MacOS App Artifact Avec GUI
+            if: matrix.os.id == 'm'
+            uses: actions/upload-artifact@v3
+            with:
+                name: 'MacOS App Avec GUI'
+                path: 'dist/${{ format(matrix.os.exec, "-gui") }}'

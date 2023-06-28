@@ -1,0 +1,15 @@
+# content
+mf.content.withversion = %name% v%version%
+mf.content.withoutvers = %name%
+
+# tooltip
+_flags.decode_as_uri = 1
+mf.tooltip = %25name%25 [%25id%25]:%0A%25desc%25%0Afrom %25source%25
+_flags.decode_as_uri =
+
+# defaults
+mf.default.id      = no mod ID‽‽‽
+mf.default.name    = !{%id%}
+mf.default.desc    = !{mod description unknown}
+mf.default.version = !{mod version unknown}
+mf.default.source  = !{source}
