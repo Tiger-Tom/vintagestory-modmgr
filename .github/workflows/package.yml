@@ -80,6 +80,8 @@ jobs:
           - name: Install Requirements
             run: pip install -r requirements.txt
             # Debug
+          - name: Debug [pwd]
+            run: pwd
           - name: Debug [tree]
             run: tree
             # Build Sans GUI
