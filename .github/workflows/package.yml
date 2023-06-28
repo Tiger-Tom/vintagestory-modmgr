@@ -80,13 +80,13 @@ jobs:
           - name: Install Requirements
             run: pip install -r requirements.txt
             # Build Sans GUI
-          - name: Run PyInstaller Spec Sans GUI For ${{ matrix.os.title }}
+          - name: Run PyInstaller Spec (Sans GUI) For ${{ matrix.os.title }}
             run: pyinstaller ${{ format(matrix.os.spec, 'sans') }}
             # Install GUI library
           - name: Install PyWebView (GUI)
             run: pip install -U pywebview
             # Build Avec GUI
-          - name: Run PyInstaller Spec Avec GUI For ${{ matrix.os.title }}
+          - name: Run PyInstaller Spec (Avec GUI) For ${{ matrix.os.title }}
             run: pyinstaller ${{ format(matrix.os.spec, 'avec') }}
             # Upload artifacts
             ## Sans GUI
