@@ -6,31 +6,31 @@ env:
 
 jobs:
     build-zipapp:
-        name: 'Create ZipApp'
+        name: Create ZipApp
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-                cache: 'pip'
+                cache: pip
           - name: Install requirements
-            run: 'pip install -r requirements.txt'
+            run: pip install -r requirements.txt
           - name: Create Runner File __main__.py
             uses: DamianReeves/write-file-action@v1.2
             with:
                 path: __main__.py
-                contents: 'import main;main.main()'
-          - name: 'Add Files to Zips'
-            run: 'zip -r -0 vintagestory-modmgr.pyz.zip __main__.py main.py basemod.py modes/ gui/ LICENSE'
+                contents: import main;main.main()
+          - name: Add Files to Zips
+            run: zip -r -0 vintagestory-modmgr.pyz.zip __main__.py main.py basemod.py modes/ gui/ LICENSE
           - name: Convert Zip to PYZs
-            run: 'python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz'
-          - name: 'Test Application'
-            run: 'python3 vintagestory-modmgr.pyz --help'
-          - name: 'Upload Build Artifact'
+            run: python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz
+          - name: Test Application
+            run: python3 vintagestory-modmgr.pyz --help
+          - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
-                name: 'ZipApp (cross-platform, requires Python to be installed)'
+                name: ZipApp (cross-platform, requires Python to be installed)
                 path: vintagestory-modmgr.pyz
     setup-bundle-specs:
         runs-on: ubuntu-latest
@@ -39,12 +39,12 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-                cache: 'pip'
+                cache: pip
           - name: Install PyInstaller
-            run: 'pip install -U pyinstaller'
+            run: pip install -U pyinstaller
           - name: Generate PyInstaller Spec Files
             working-directory: ./bundle
-            run: './genspec.sh'
+            run: ./genspec.sh
           - name: Upload Spec Artifacts
             uses: actions/upload-artifact@v3
             with:
@@ -75,41 +75,41 @@ jobs:
             if: matrix.os.id != 'm'
             uses: crazy-max/ghaction-upx@v2
           - name: Install PyInstaller
-            run: 'pip install -U pyinstaller'
+            run: pip install -U pyinstaller
           - name: Install Requirements
-            run: 'pip install -r requirements.txt'
+            run: pip install -r requirements.txt
             # Build Sans GUI
-          - name: 'Run PyInstaller Spec Sans GUI For ${{ matrix.os.title }}'
-            run: 'pyinstaller ${{ format(matrix.os.spec, "sans") }}'
+          - name: Run PyInstaller Spec Sans GUI For ${{ matrix.os.title }}
+            run: pyinstaller ${{ format(matrix.os.spec, 'sans') }}
             # Install GUI library
           - name: Install PyWebView (GUI)
             run: pip install -U pywebview
             # Build Avec GUI
-          - name: 'Run PyInstaller Spec Avec GUI For ${{ matrix.os.title }}'
-            run: 'pyinstaller ${{ format(matrix.os.spec, "avec") }}'
+          - name: Run PyInstaller Spec Avec GUI For ${{ matrix.os.title }}
+            run: pyinstaller ${{ format(matrix.os.spec, avec') }}
             # Upload artifacts
             ## Sans GUI
-          - name: 'Upload ${{ matrix.os.title }} Executable Artifact Sans GUI'
+          - name: Upload ${{ matrix.os.title }} Executable Artifact Sans GUI
             uses: actions/upload-artifact@v3
             with:
-                name: '${{ matrix.os.title }} Binary Sans GUI'
-                path: 'dist/${{ format(matrix.os.exec, "") }}'
+                name: ${{ matrix.os.title }} Binary Sans GUI
+                path: dist/${{ format(matrix.os.exec, '') }}
             ## Avec GUI
-          - name: 'Upload ${{ matrix.os.title }} Executable Artifact Avec GUI'
+          - name: Upload ${{ matrix.os.title }} Executable Artifact Avec GUI
             uses: actions/upload-artifact@v3
             with:
-                name: '${{ matrix.os.title }} Binary Avec GUI'
-                path: 'dist/${{ format(matrix.os.exec, "-gui") }}'
+                name: ${{ matrix.os.title }} Binary Avec GUI
+                path: dist/${{ format(matrix.os.exec, '-gui') }}
             
           - name: Upload MacOS App Artifact Sans GUI
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
             with:
-                name: 'MacOS App Sans GUI'
-                path: 'dist/${{ format(matrix.os.exec, "") }}'
+                name: MacOS App Sans GUI
+                path: dist/${{ format(matrix.os.exec, '') }}
           - name: Upload MacOS App Artifact Avec GUI
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
             with:
-                name: 'MacOS App Avec GUI'
-                path: 'dist/${{ format(matrix.os.exec, "-gui") }}'
+                name: MacOS App Avec GUI
+                path: dist/${{ format(matrix.os.exec, '-gui') }}
