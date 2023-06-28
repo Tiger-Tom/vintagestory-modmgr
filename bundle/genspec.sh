@@ -2,8 +2,7 @@
 
 # config
 name="vintagestory-modmgr"
-rootA="."; rootB="."
-script="$name/main.py"; out="./specs/"
+script="$(pwd)/main.py"; out="./specs/"
 icon_win="$name.ico"; icon_mac="$name.icns"
 oss=(lin win mac)
 
@@ -32,13 +31,13 @@ generate_spec() {
         --onefile --specpath $out
         --name $name
         $($gui \
-            && $s"--add-data $rootA/gui/:gui --windowed" \
+            && $s"--add-data ./gui/:gui --windowed" \
             || $s"--hidden-import webview --console"  \
         )
-        --splash ../bundle/vintagestory-modmgr_splash.png
+        --splash ./bundle/vintagestory-modmgr_splash.png
         $($win || $s"--strip")
         $($gui && $s"--windowed" || $s"--console")
-        $($lin || $s"--icon $rootA/bundle/vintagestory-modmgr_icon.ic$($win && $s"o" || $s"ns" )")
+        $($lin || $s"--icon ./bundle/vintagestory-modmgr_icon.ic$($win && $s"o" || $s"ns" )")
     )
     echo "${args[@]}"
     pyi-makespec "${args[@]}" $script
