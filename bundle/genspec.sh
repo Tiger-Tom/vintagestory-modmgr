@@ -45,9 +45,6 @@ generate_spec() {
     mv $out/$name.spec $out/`generate_spec_name`
 }
 
-
-pargs="echo gui=\$gui lin=\$lin win=\$win mac=\$mac"
-
 mkdir -p $out
 
 for os in "${oss[@]}"; do
