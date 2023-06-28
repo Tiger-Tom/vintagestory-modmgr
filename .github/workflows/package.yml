@@ -33,8 +33,8 @@ jobs:
                 name: ZipApp (cross-platform, requires Python to be installed)
                 path: vintagestory-modmgr.pyz
     setup-bundle-specs:
-        runs-on: ubuntu-latest
         name: Setup Bundle Specs
+        runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
           - uses: actions/setup-python@v4
@@ -73,7 +73,7 @@ jobs:
                 name: PyInstaller Spec Files
             # Install required libraries
           - name: Install UPX
-            if: matrix.os.id != 'm'
+            if: matrix.os.id == 'w'
             uses: crazy-max/ghaction-upx@v2
           - name: Install PyInstaller
             run: pip install -U pyinstaller
