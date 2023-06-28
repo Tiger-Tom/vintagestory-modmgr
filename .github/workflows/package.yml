@@ -90,27 +90,27 @@ jobs:
             run: pyinstaller ${{ format(matrix.os.spec, 'avec') }}
             # Upload artifacts
             ## Sans GUI
-          - name: Upload ${{ matrix.os.title }} Executable Artifact Sans GUI
+          - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
             uses: actions/upload-artifact@v3
             with:
-                name: ${{ matrix.os.title }} Binary Sans GUI
+                name: ${{ matrix.os.title }} Binary (Sans GUI)
                 path: dist/${{ format(matrix.os.exec, '') }}
             ## Avec GUI
-          - name: Upload ${{ matrix.os.title }} Executable Artifact Avec GUI
+          - name: Upload ${{ matrix.os.title }} Executable Artifact (Avec GUI)
             uses: actions/upload-artifact@v3
             with:
-                name: ${{ matrix.os.title }} Binary Avec GUI
+                name: ${{ matrix.os.title }} Binary (Avec GUI)
                 path: dist/${{ format(matrix.os.exec, '-gui') }}
             
-          - name: Upload MacOS App Artifact Sans GUI
+          - name: Upload MacOS App Artifact (Sans GUI)
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
             with:
-                name: MacOS App Sans GUI
+                name: MacOS App (Sans GUI)
                 path: dist/${{ format(matrix.os.exec, '') }}
-          - name: Upload MacOS App Artifact Avec GUI
+          - name: Upload MacOS App Artifact (Avec GUI)
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
             with:
-                name: MacOS App Avec GUI
+                name: MacOS App (Avec GUI)
                 path: dist/${{ format(matrix.os.exec, '-gui') }}
