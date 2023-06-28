@@ -86,7 +86,7 @@ jobs:
             run: pip install -U pywebview
             # Build Avec GUI
           - name: Run PyInstaller Spec Avec GUI For ${{ matrix.os.title }}
-            run: pyinstaller ${{ format(matrix.os.spec, avec') }}
+            run: pyinstaller ${{ format(matrix.os.spec, 'avec') }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact Sans GUI
