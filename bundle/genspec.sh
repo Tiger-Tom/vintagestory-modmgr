@@ -2,7 +2,7 @@
 
 # config
 name="vintagestory-modmgr"
-rootA=".."; rootB="."
+rootA="."; rootB="."
 script="$rootB/main.py"; out="./specs/"
 icon_win="$name.ico"; icon_mac="$name.icns"
 oss=(lin win mac)
