@@ -34,13 +34,13 @@ jobs:
                 path: vintagestory-modmgr.pyz
     build-executable:
         env:
-            bundle_common: 'main.py --onefile --splash ./bundle/vintagestory-modmgr_splash.png'
-            bundle_common_sans: '--windowed'
-            bundle_common_avec: '--hidden-import webview --console'
+            bundle_common: 'main.py --onefile'
+            bundle_common_sans: '--hidden-import webview --console'
+            bundle_common_avec: '--windowed'
             bundle_lin_sans: ''
-            bundle_lin_avec: '--add-data ./gui/:gui'
+            bundle_lin_avec: '--add-data ./gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png'
             bundle_win_sans: ''
-            bundle_win_avec: '--add-data ./gui/;gui'
+            bundle_win_avec: '--add-data ./gui/;gui --splash ./bundle/vintagestory-modmgr_splash.png'
             bundle_mac_sans: ''
             bundle_mac_avec: '--add-data ./gui/:gui'
         strategy:
