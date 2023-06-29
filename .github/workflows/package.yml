@@ -32,34 +32,30 @@ jobs:
             with:
                 name: ZipApp (cross-platform, requires Python to be installed)
                 path: vintagestory-modmgr.pyz
-    setup-bundle-specs:
-        name: Setup Bundle Specs
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v3
-          - uses: actions/setup-python@v4
-            with:
-                python-version: '3.11'
-                cache: pip
-          - name: Install PyInstaller
-            run: pip install -U pyinstaller
-          - name: Generate PyInstaller Spec Files
-            working-directory: ./bundle
-            run: ./genspec.sh
-          - name: Upload Spec Artifacts
-            uses: actions/upload-artifact@v3
-            with:
-                name: PyInstaller Spec Files
-                path: ./bundle/specs/*.spec
     build-executable:
-        needs: setup-bundle-specs
+        env:
+            bundle_common: '--onefile --splash ./bundle/vintagestory-modmgr_splash.png'
+            bundle_common_sans: '--windowed'
+            bundle_common_avec: '--hidden-import webview --console'
+            bundle_lin_sans: ''
+            bundle_lin_avec: '--add-data ./gui/:gui'
+            bundle_win_sans: ''
+            bundle_win_avec: '--add-data ./gui/;gui'
+            bundle_mac_sans: ''
+            bundle_mac_avec: '--add-data ./gui/:gui'
         strategy:
             fail-fast: false
             matrix:
                 os:
-                  - {name: 'ubuntu-latest',  title: 'Linux',   spec: 'linux-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'l'}
-                  - {name: 'windows-latest', title: 'Windows', spec: 'windows-{0}_gui.spec', exec: 'vintagestory-modmgr{0}.exe', id: 'w'}
-                  - {name: 'macos-latest',   title: 'MacOS',   spec: 'macos-{0}_gui.spec',   exec: 'vintagestory-modmgr{0}',     id: 'm'}
+                  - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
+                        sans_gui: '${{ env.bundle_lin_sans }}',
+                        avec_gui: '${{ env.bundle_lin_avec }}'}
+                  - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
+                        sans_gui: '${{ env.bundle_win_sans }}',
+                        avec_gui: '${{ env.bundle_win_avec }}'}
+                  - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
+                        sans_gui: '${{ env.bundle_mac_sans }}',
+                        avec_gui: '${{ env.bundle_mac_avec }}'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
@@ -67,27 +63,23 @@ jobs:
           - uses: actions/setup-python@v4
             with:
                 python-version: '3.11'
-          - name: Fetch PyInstaller Specs
-            uses: actions/download-artifact@v3
-            with:
-                name: PyInstaller Spec Files
             # Install required libraries
           - name: Install UPX
             if: matrix.os.id == 'w'
             uses: crazy-max/ghaction-upx@v2
           - name: Install PyInstaller
-            run: pip install -U pyinstaller
+            run: pip install -U pyinstaller pyinstaller-hooks-contrib
           - name: Install Requirements
             run: pip install -r requirements.txt
             # Build Sans GUI
-          - name: Run PyInstaller Spec (Sans GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ format(matrix.os.spec, 'sans') }}
+          - name: Bundle With PyInstaller (Sans GUI) For ${{ matrix.os.title }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_sans }} ${{ matrix.os.sans_gui }}
             # Install GUI library
           - name: Install PyWebView (GUI)
             run: pip install -U pywebview
             # Build Avec GUI
-          - name: Run PyInstaller Spec (Avec GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ format(matrix.os.spec, 'avec') }}
+          - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.sans_avec }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
@@ -101,16 +93,9 @@ jobs:
             with:
                 name: ${{ matrix.os.title }} Binary (Avec GUI)
                 path: dist/${{ format(matrix.os.exec, '-gui') }}
-            
-          - name: Upload MacOS App Artifact (Sans GUI)
-            if: matrix.os.id == 'm'
-            uses: actions/upload-artifact@v3
-            with:
-                name: MacOS App (Sans GUI)
-                path: dist/${{ format(matrix.os.exec, '') }}
           - name: Upload MacOS App Artifact (Avec GUI)
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
             with:
                 name: MacOS App (Avec GUI)
-                path: dist/${{ format(matrix.os.exec, '-gui') }}
+                path: dist/${{ format(matrix.os.exec, '-gui.app') }}
