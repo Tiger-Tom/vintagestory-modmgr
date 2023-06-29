@@ -48,14 +48,14 @@ jobs:
             matrix:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
-                        sans_gui: '${{ env.bundle_lin_sans }}',
-                        avec_gui: '${{ env.bundle_lin_avec }}'}
+                        sans_gui: '$bundle_lin_sans',
+                        avec_gui: '$bundle_lin_avec'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
-                        sans_gui: '${{ env.bundle_win_sans }}',
-                        avec_gui: '${{ env.bundle_win_avec }}'}
+                        sans_gui: '$env:bundle_win_sans',
+                        avec_gui: '$env:bundle_win_avec'}
                   - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
-                        sans_gui: '${{ env.bundle_mac_sans }}',
-                        avec_gui: '${{ env.bundle_mac_avec }}'}
+                        sans_gui: '$bundle_mac_sans',
+                        avec_gui: '$bundle_mac_avec'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
