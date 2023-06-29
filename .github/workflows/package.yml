@@ -34,7 +34,7 @@ jobs:
                 path: vintagestory-modmgr.pyz
     build-executable:
         env:
-            bundle_common: '--onefile --splash ./bundle/vintagestory-modmgr_splash.png'
+            bundle_common: 'main.py --onefile --splash ./bundle/vintagestory-modmgr_splash.png'
             bundle_common_sans: '--windowed'
             bundle_common_avec: '--hidden-import webview --console'
             bundle_lin_sans: ''
