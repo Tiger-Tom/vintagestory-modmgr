@@ -43,10 +43,10 @@ jobs:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
                         sans_gui: '',
-                        avec_gui: '--add-data gui/:gui '--splash ./bundle/vintagestory-modmgr_splash.png'}
+                        avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
-                        avec_gui: '--add-data gui/;gui '--splash ./bundle/vintagestory-modmgr_splash.png'}
+                        avec_gui: '--add-data gui/;gui --splash ./bundle/vintagestory-modmgr_splash.png'}
                   - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
                         sans_gui: '',
                         avec_gui: '--add-data gui/:gui'}
