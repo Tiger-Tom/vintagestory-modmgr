@@ -73,13 +73,13 @@ jobs:
             run: pip install -r requirements.txt
             # Build Sans GUI
           - name: Bundle With PyInstaller (Sans GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_sans }} ${{ matrix.os.sans_gui }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_sans }} ${{ matrix.os.sans_gui }} --name ${{ format(matrix.os.exec, '') }}
             # Install GUI library
           - name: Install PyWebView (GUI)
             run: pip install -U pywebview
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
