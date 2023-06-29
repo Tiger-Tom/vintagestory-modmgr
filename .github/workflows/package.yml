@@ -61,6 +61,8 @@ jobs:
           - name: Install UPX
             if: matrix.os.id == 'w'
             uses: crazy-max/ghaction-upx@v2
+            with:
+                install-only: true
           - name: Install PyInstaller
             run: pip install -U pyinstaller pyinstaller-hooks-contrib
           - name: Install Requirements
