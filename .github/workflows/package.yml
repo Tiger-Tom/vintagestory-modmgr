@@ -79,7 +79,7 @@ jobs:
             run: pip install -U pywebview
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.sans_avec }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
