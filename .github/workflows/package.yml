@@ -38,9 +38,9 @@ jobs:
             bundle_common_sans: '--hidden-import webview --console'
             bundle_common_avec: '--windowed'
             bundle_lin_sans: ''
-            bundle_lin_avec: '--add-data ./gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png'
+            bundle_lin_avec: '--add-data ./gui/:gui'
             bundle_win_sans: ''
-            bundle_win_avec: '--add-data ./gui/;gui --splash ./bundle/vintagestory-modmgr_splash.png'
+            bundle_win_avec: '--add-data ./gui/;gui'
             bundle_mac_sans: ''
             bundle_mac_avec: '--add-data ./gui/:gui'
         strategy:
@@ -79,7 +79,7 @@ jobs:
             run: pip install -U pywebview
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
-            run: ${{ (matrix.os.id == 'w') && '&' || ''}} pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
+            run: ${{ (matrix.os.id == 'w') && '&' || ''}} pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }} ${{ (matrix.os.id != 'm') && '--splash ./bundle/vintagestory-modmgr_splash.png' || '' }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
