@@ -1,42 +1,35 @@
 #> Setup PyI_Splash
 # PyInstaller splash screen control
-try:
-    import pyi_splash
-    def splash(text_or_cmd: str | bool) -> bool | Exception:
-        # False closes splash, str updates text; returns success or exception
-        if not pyi_splash.is_alive(): return False
-        try:
-            if text_or_cmd is False:
-                pyi_splash.close(); return True
-            if 'os' in dir():
-                text_or_cmd += f'\n{getattr(os, "getlogin", lambda: "(login name unknown)")()} | {os.getcwd()}'
-                if hasattr(os, 'uname'): text_or_cmd += f'\n{os.uname()}'
-                else: text_or_cmd += 'os.name'
-            if 'sys' in dir():
-                text_or_cmd += f'\n{" ".join(sys.argv)}'
-            pyi_splash.update_text(text_or_cmd)
-            return True
-        except Exception as e: return e
-except ModuleNotFoundError: splash = lambda _: None
+def splash(text_or_cmd: str | bool) -> bool | Exception:
+    try: import pyi_splash
+    except ModuleNotFoundError:
+        splesh = lambda _: None; return None
+    # False closes splash, str updates text; returns success or exception
+    if not pyi_splash.is_alive(): return False
+    try:
+        if text_or_cmd is False:
+            pyi_splash.close(); return True
+        if 'os' in dir():
+            text_or_cmd += f'\n{getattr(os, "getlogin", lambda: "(login name unknown)")()} | {os.getcwd()}'
+            if hasattr(os, 'uname'): text_or_cmd += f'\n{os.uname()}'
+            else: text_or_cmd += 'os.name'
+        if 'sys' in dir():
+            text_or_cmd += f'\n{" ".join(sys.argv)}'
+        pyi_splash.update_text(text_or_cmd)
+        return True
+    except Exception as e: return e
 #</Setup PyI_Splash
 
 #> Imports
-splash('Importing modules: sys, os')
 import sys, os                 # basic system libraries
-splash('Importing modules: importlib.machinery')
 import importlib.machinery     # import GU/API modules
-splash('Importing modules: argparse')
 import argparse                # typehints
-splash('Importing modules: webview')
 try: import webview            # HTML/CSS/JS GUI
 except Exception as e: webview = e
-splash('Importing modules: base GU/API (if possible)')
 try:
     from gui import guapi      # default Graphical User / Application Protocol Interface
 except Exception as e: guapi = e
-splash('Importing modules: mod interface')
 from basemod import Mod
-splash('All modules imported')
 #</Imports
 
 #> Setup
@@ -47,7 +40,6 @@ builtin_gui_dir = os.path.join('gui', 'index.html') if not am_frozed else os.pat
 #</Setup
 
 #> Base Hooks
-splash('Setting up: base hook')
 class BaseHook:
     __slots__ = ('ns', 'frozen', 'splash', 'Mod', 'guapi', 'window', 'webview')
     def __init__(self, ns: argparse.Namespace, is_frozen: bool, splash=splash):
@@ -101,14 +93,12 @@ class BaseHook:
 #</Base Hooks
 
 #> Header >/
-splash('Detecting webkit cache')
 if os.name == 'nt': cache_err = 'you are running Windows'
 else:
     cache_dir_base = os.path.expanduser(f'~/.cache/{os.path.basename(sys.argv[0])}')
     if os.path.exists(f'{cache_dir_base}/CacheStorage') and os.path.exists(f'{cache_dir_base}/WebKitCache'):
         cache_err = False
     else: cache_err = f'{cache_dir_base} does not appear to exist'
-splash('Setting up add_arguments function')
 def add_arguments(p: argparse.ArgumentParser):
     splash('Parsing arguments')
     if webview is False:
@@ -123,8 +113,8 @@ def add_arguments(p: argparse.ArgumentParser):
     else: p.add_argument('--clear-cache', action='store_const', const=False, default=False, help=f'Would clear the cache, but currently has no effect because {cache_err}')
     p.add_argument('--guapi', '--api', default=None, help='The Python module of the API to provide to the GUI (GU/API) (defaults to modes/guapi.py). Additionally, this file provides hooks that can modify the way the program behaves in various ways')
     #p.add_argument('initial_dir', metavar='path', nargs='?', default=None, help='The directory to start in (optional)')
-splash('Setting up command function')
 def command(ns: argparse.Namespace):
+    splash('Loading GUI')
     # Remove cache if needed
     splash('Checking if cache needs to be removed')
     if ns.clear_cache:
