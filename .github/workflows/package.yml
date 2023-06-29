@@ -35,27 +35,21 @@ jobs:
     build-executable:
         env:
             bundle_common: 'main.py --onefile'
-            bundle_common_sans: '--hidden-import webview --console'
-            bundle_common_avec: '--windowed'
-            bundle_lin_sans: ''
-            bundle_lin_avec: '--add-data ./gui/:gui'
-            bundle_win_sans: ''
-            bundle_win_avec: '--add-data ./gui/;gui'
-            bundle_mac_sans: ''
-            bundle_mac_avec: '--add-data ./gui/:gui'
+            bundle_sans: '--hidden-import webview --console'
+            bundle_avec: '--windowed'
         strategy:
             fail-fast: false
             matrix:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
-                        sans_gui: '$bundle_lin_sans',
-                        avec_gui: '$bundle_lin_avec'}
+                        sans_gui: '',
+                        avec_gui: '--add-data gui/:gui '--splash ./bundle/vintagestory-modmgr_splash.png'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
-                        sans_gui: '$env:bundle_win_sans',
-                        avec_gui: '$env:bundle_win_avec'}
+                        sans_gui: '',
+                        avec_gui: '--add-data gui/;gui '--splash ./bundle/vintagestory-modmgr_splash.png'}
                   - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
-                        sans_gui: '$bundle_mac_sans',
-                        avec_gui: '$bundle_mac_avec'}
+                        sans_gui: '',
+                        avec_gui: '--add-data gui/:gui'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
@@ -79,7 +73,7 @@ jobs:
             run: pip install -U pywebview
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
-            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }} ${{ (matrix.os.id != 'm') && '--splash ./bundle/vintagestory-modmgr_splash.png' || '' }}
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_common_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
