@@ -106,7 +106,7 @@ jobs:
             ### MacOS App
           - name: Zip MacOS App to Preserve Name
             if: matrix.os.id == 'm'
-            run: zip -j ${{ format(matrix.os.exec, '-gui.app.zip') }} dist/${{ format(matrix.os.exec, '-gui.app' }}
+            run: zip -j ${{ format(matrix.os.exec, '-gui.app.zip') }} dist/${{ format(matrix.os.exec, '-gui.app') }}
           - name: Upload MacOS App Artifact (Avec GUI)
             if: matrix.os.id == 'm'
             uses: actions/upload-artifact@v3
