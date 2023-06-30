@@ -2,6 +2,7 @@
 
 #> Imports
 import argparse # argument handling
+import sys      # check if frozen
 
 from modes import update
 from modes import import_export as impexp
@@ -19,6 +20,8 @@ def main(args = None):
     gui.add_arguments(sp.add_parser('gui', help='Interactive GUI (the default)'))
     debug.add_arguments(sp.add_parser('debug', help='Shows a bunch of debug information (mostly useful for PyInstaller bundles)'))
     args,extra = p.parse_known_args(args); args._globals = globals()
-    if args.mode is None: return main(['gui']+extra)
+    if args.mode is None:
+        if getattr(sys, "frozen", False): return main(['--help']+extra)
+        else: return main(['gui']+extra)
     return {'update': update.command, 'import': impexp.import_command, 'export': impexp.export_command, 'gui': gui.command, 'debug': debug.command}[args.mode](args)
 if __name__ == '__main__': main()
