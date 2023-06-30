@@ -41,10 +41,10 @@ jobs:
             fail-fast: false
             matrix:
                 os:
-                  - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
-                        sans_gui: '--strip',
-                        avec_gui: '--strip --add-data gui/:gui --add-binary /usr/lib/libjavascriptcoregtk-4.0.so:. --splash ./bundle/vintagestory-modmgr_splash.png',
-                        webview: 'pywebview[gtk]'}
+                  #- {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
+                  #      sans_gui: '--strip',
+                  #      avec_gui: '--strip --add-data gui/:gui --add-binary /usr/lib/libjavascriptcoregtk-4.0.so:. --splash ./bundle/vintagestory-modmgr_splash.png',
+                  #      webview: 'pywebview[gtk]'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
                         avec_gui: '--add-data gui/`;gui --splash ./bundle/vintagestory-modmgr_splash.png --icon ./bundle/vintagestory-modmgr_icon.ico',
