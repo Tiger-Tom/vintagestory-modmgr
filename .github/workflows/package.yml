@@ -43,7 +43,7 @@ jobs:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
                         sans_gui: '--strip',
-                        avec_gui: '--strip --add-data gui/:gui --add-binary /usr/lib/libjavascriptcoregtk-4.2.so;. --splash ./bundle/vintagestory-modmgr_splash.png',
+                        avec_gui: '--strip --add-data gui/:gui --add-binary /usr/lib/libjavascriptcoregtk-4.2.so:. --splash ./bundle/vintagestory-modmgr_splash.png',
                         webview: 'pywebview[gtk]'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
