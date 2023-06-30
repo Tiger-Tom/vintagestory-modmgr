@@ -34,7 +34,7 @@ jobs:
                 path: vintagestory-modmgr.pyz
     build-executable:
         env:
-            bundle_common: 'main.py --onefile'
+            bundle_common: 'main.py --onefile --log-level WARN'
             bundle_sans: '--hidden-import webview --console'
             bundle_avec: '--windowed'
         strategy:
