@@ -2,7 +2,6 @@
 
 #> Imports
 import argparse # argument handling
-import sys      # check if frozen
 
 from modes import update
 from modes import import_export as impexp
