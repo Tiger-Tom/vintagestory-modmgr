@@ -21,7 +21,7 @@ def main(args = None):
     debug.add_arguments(sp.add_parser('debug', help='Shows a bunch of debug information (mostly useful for PyInstaller bundles)'))
     args,extra = p.parse_known_args(args); args._globals = globals()
     if args.mode is None:
-        if gui.has_builtin_gui: return main(['--help']+extra)
+        if not gui.has_builtin_gui: return main(['--help']+extra)
         else: return main(['gui']+extra)
     return {'update': update.command, 'import': impexp.import_command, 'export': impexp.export_command, 'gui': gui.command, 'debug': debug.command}[args.mode](args)
 if __name__ == '__main__': main()
