@@ -1,9 +1,23 @@
+#> Imports
+import sys, os                 # basic system libraries
+import importlib.machinery     # import GU/API modules
+import argparse                # typehints
+try: import webview            # HTML/CSS/JS GUI
+except Exception as e: webview = e
+try:
+    from gui import guapi      # default Graphical User / Application Protocol Interface
+except Exception as e: guapi = e
+from basemod import Mod
+#</Imports
+
 #> Setup PyI_Splash
 # PyInstaller splash screen control
 def splash(text_or_cmd: str | bool) -> bool | Exception:
-    try: import pyi_splash
-    except ModuleNotFoundError:
-        splesh = lambda _: None; return None
+    if 'pyi_splash' not in sys.modules:
+        try: import pyi_splash
+        except ModuleNotFoundError:
+            global splash
+            splash = lambda _: None; return None
     # False closes splash, str updates text; returns success or exception
     if not pyi_splash.is_alive(): return False
     try:
@@ -20,23 +34,12 @@ def splash(text_or_cmd: str | bool) -> bool | Exception:
     except Exception as e: return e
 #</Setup PyI_Splash
 
-#> Imports
-import sys, os                 # basic system libraries
-import importlib.machinery     # import GU/API modules
-import argparse                # typehints
-try: import webview            # HTML/CSS/JS GUI
-except Exception as e: webview = e
-try:
-    from gui import guapi      # default Graphical User / Application Protocol Interface
-except Exception as e: guapi = e
-from basemod import Mod
-#</Imports
-
 #> Setup
 eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 
 am_frozed = getattr(sys, 'frozen', False)
 builtin_gui_dir = os.path.join('gui', 'index.html') if not am_frozed else os.path.join(sys._MEIPASS, 'gui', 'index.html')
+has_builtin_gui = os.path.exists(builtin_gui_dir)
 #</Setup
 
 #> Base Hooks
@@ -104,7 +107,7 @@ def add_arguments(p: argparse.ArgumentParser):
     if webview is False:
         p.description = 'GUI mode cannot be used without webview. Try `pip install webview` or otherwise installing python-pywebview?'
         return
-    if os.path.exists(builtin_gui_dir):
+    if has_builtin_gui:
         p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
     else: p.add_argument('-g', '--gui', metavar='path', required=True, help='The GUI file (or URI) to serve')
     p.add_argument('-s', '--http-server', metavar='port', default=False, type=int, help='If provided, the web GUI and API will be served on a local HTTP server at the port (not recommended due to security concerns)')

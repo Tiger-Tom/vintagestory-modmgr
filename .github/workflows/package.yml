@@ -41,7 +41,7 @@ jobs:
             fail-fast: false
             matrix:
                 os:
-                  - {name: 'ubuntu-22.04',   title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
+                  - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
                         sans_gui: '',
                         avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png',
                         webview: 'pywebview[gtk]'}

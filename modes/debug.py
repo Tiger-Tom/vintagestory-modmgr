@@ -26,6 +26,7 @@ def command(ns: argparse.Namespace):
     print(f'  - GUI module source: {ns._globals["gui"].__file__}')
     print(f'  - debug module source: {ns._globals["debug"].__file__}')
     print(f'- Builtin GUI dir: {ns._globals["gui"].builtin_gui_dir}')
+    print(f'  - Has builtin GUI (dir exists): {ns._globals["gui"].has_builtin_gui}')
     print(f'  - GUI in frozed mode: {ns._globals["gui"].am_frozed}')
     print(f'  - GUI WebView: {ns._globals["gui"].webview}')
     print(f'  - GUI GU/API: {ns._globals["gui"].guapi}')
