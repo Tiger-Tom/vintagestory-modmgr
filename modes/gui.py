@@ -8,16 +8,15 @@ try:
     from gui import guapi      # default Graphical User / Application Protocol Interface
 except Exception as e: guapi = e
 from basemod import Mod
+try:
+    import pyi_splash          # PyInstaller splash screen
+    splash = _pyi_splash
+except ModuleNotFoundError: splash = lambda _: None
 #</Imports
 
 #> Setup PyI_Splash
 # PyInstaller splash screen control
-def splash(text_or_cmd: str | bool) -> bool | Exception:
-    if 'pyi_splash' not in sys.modules:
-        try: import pyi_splash
-        except ModuleNotFoundError:
-            global splash
-            splash = lambda _: None; return None
+def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
     # False closes splash, str updates text; returns success or exception
     if not pyi_splash.is_alive(): return False
     try:
