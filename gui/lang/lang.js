@@ -4,7 +4,7 @@ globalThis.$lang = {
     /* text to replace */
     look_seq: /\[([\w\.$]+?);/g, // [key;
     /* parsing the lang file */
-    escaped_linebreak: /[^\S\r\n]*[^\\]\\([^\r\n]*)\r?\n[^\S\r\n]*/g
+    escaped_linebreak: /[^\S\r\n]*[^\\]\\([^\r\n]*)\r?\n[^\S\r\n]*/g,
     line_pattern: /^[^\S\n]*([\w\.$]+)[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/gm,
     /* modified fields */
     fields_lenient: [ // element can have children (feels kind of wrong to write)
