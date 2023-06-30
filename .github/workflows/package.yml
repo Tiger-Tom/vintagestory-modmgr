@@ -42,16 +42,16 @@ jobs:
             matrix:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
-                        sans_gui: '',
-                        avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png',
+                        sans_gui: '--strip',
+                        avec_gui: '--strip --add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png',
                         webview: 'pywebview[gtk]'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
                         avec_gui: '--add-data gui/`;gui --splash ./bundle/vintagestory-modmgr_splash.png --icon ./bundle/vintagestory-modmgr_icon.ico',
                         webview: 'pywebview'}
                   - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
-                        sans_gui: '',
-                        avec_gui: '--add-data gui/:gui --icon ./bundle/vintagestory-modmgr_icon.icns',
+                        sans_gui: '--strip',
+                        avec_gui: '--strip --add-data gui/:gui --icon ./bundle/vintagestory-modmgr_icon.icns',
                         webview: 'pywebview'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
