@@ -43,13 +43,16 @@ jobs:
                 os:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
                         sans_gui: '',
-                        avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png'}
+                        avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png',
+                        'webview: 'pywebview'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
-                        avec_gui: '--add-data gui/`;gui --splash ./bundle/vintagestory-modmgr_splash.png --icon ./bundle/vintagestory-modmgr_icon.ico'}
+                        avec_gui: '--add-data gui/`;gui --splash ./bundle/vintagestory-modmgr_splash.png --icon ./bundle/vintagestory-modmgr_icon.ico',
+                        webview: 'pywebview[qt]'}
                   - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
                         sans_gui: '',
-                        avec_gui: '--add-data gui/:gui --icon ./bundle/vintagestory-modmgr_icon.icns'}
+                        avec_gui: '--add-data gui/:gui --icon ./bundle/vintagestory-modmgr_icon.icns',
+                        webview: 'pywebview'}
         name: Build Executable For ${{ matrix.os.title }}
         runs-on: ${{ matrix.os.name }}
         steps:
@@ -72,7 +75,7 @@ jobs:
             run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_sans }} ${{ matrix.os.sans_gui }} --name ${{ format(matrix.os.exec, '') }}
             # Install GUI library
           - name: Install PyWebView (GUI)
-            run: pip install -U pywebview
+            run: pip install ${{ matrix.os.webview }}
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
             run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
