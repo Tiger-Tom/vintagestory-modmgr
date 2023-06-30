@@ -1,21 +1,4 @@
-#> Imports
-import sys, os                 # basic system libraries
-import importlib.machinery     # import GU/API modules
-import argparse                # typehints
-try: import webview            # HTML/CSS/JS GUI
-except Exception as e: webview = e
-try:
-    from gui import guapi      # default Graphical User / Application Protocol Interface
-except Exception as e: guapi = e
-from basemod import Mod
-try:
-    import pyi_splash          # PyInstaller splash screen
-    splash = _pyi_splash
-except ModuleNotFoundError: splash = lambda _: None
-#</Imports
-
 #> Setup PyI_Splash
-# PyInstaller splash screen control
 def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
     # False closes splash, str updates text; returns success or exception
     if not pyi_splash.is_alive(): return False
@@ -32,6 +15,22 @@ def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
         return True
     except Exception as e: return e
 #</Setup PyI_Splash
+
+#> Imports
+import sys, os                 # basic system libraries
+import importlib.machinery     # import GU/API modules
+import argparse                # typehints
+try: import webview            # HTML/CSS/JS GUI
+except Exception as e: webview = e
+try:
+    from gui import guapi      # default Graphical User / Application Protocol Interface
+except Exception as e: guapi = e
+from basemod import Mod
+try:
+    import pyi_splash          # PyInstaller splash screen
+    splash = _pyi_splash
+except ModuleNotFoundError: splash = lambda _: None
+#</Imports
 
 #> Setup
 eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
