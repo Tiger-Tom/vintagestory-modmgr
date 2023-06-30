@@ -75,12 +75,12 @@ jobs:
             run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_sans }} ${{ matrix.os.sans_gui }} --name ${{ format(matrix.os.exec, '') }}
             # Install GUI library
             ## Needed packages (Linux only)
-          - name: Update package databases and upgrade (Linux only)
+          - name: Update package databases (Linux only)
             if: ${{ matrix.os.id == 'l' }}
-            run: sudo apt-get update && sudo apt-get upgrade -y
+            run: sudo apt-get update
           - name: Install Tk (needed for PyInstaller splash) (Linux only)
             if: ${{ matrix.os.id == 'l' }}
-            run: sudo apt-get install tk
+            run: sudo apt-get install -y tk
           - name: Install PyWebView GTK Requirements (Linux only)
             if: ${{ matrix.os.id == 'l' }}
             run: sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-4.0 libgirepository1.0-dev libwebkit2gtk-4.0
