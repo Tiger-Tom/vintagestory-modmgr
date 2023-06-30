@@ -30,7 +30,7 @@ jobs:
           - name: Upload Build Artifact
             uses: actions/upload-artifact@v3
             with:
-                name: ZipApp (cross-platform, requires Python to be installed)
+                name: Cross-Platform ZipApp (requires Python to be installed)
                 path: vintagestory-modmgr.pyz
     build-executable:
         env:
