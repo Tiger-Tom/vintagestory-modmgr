@@ -90,6 +90,10 @@ jobs:
             # Build Avec GUI
           - name: Bundle With PyInstaller (Avec GUI) For ${{ matrix.os.title }}
             run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
+            # Debug Info
+          - name: Debug Tree (Non-Windows)
+            if: matrix.os.id != 'w'
+            run: tree .
             # Upload artifacts
             ## Sans GUI
           - name: Upload ${{ matrix.os.title }} Executable Artifact (Sans GUI)
