@@ -44,7 +44,7 @@ jobs:
                   - {name: 'ubuntu-latest',  title: 'Linux',   exec: 'vintagestory-modmgr{0}',     id: 'l',
                         sans_gui: '',
                         avec_gui: '--add-data gui/:gui --splash ./bundle/vintagestory-modmgr_splash.png',
-                        'webview: 'pywebview[qt]'}
+                        webview: 'pywebview[qt]'}
                   - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
                         sans_gui: '',
                         avec_gui: '--add-data gui/`;gui --splash ./bundle/vintagestory-modmgr_splash.png --icon ./bundle/vintagestory-modmgr_icon.ico',
