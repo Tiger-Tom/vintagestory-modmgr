@@ -26,6 +26,7 @@ mg.infotutor$a = Most of the time, you will want to start by setting your mod di
                  [bt.chdir.txt; button. Then, you load the list of mods from that directory by pressing the [bt.search.txt;  \ 
                  button. This should get you started with the bare minimum. In order to view expanded descriptions, updates, \ 
                  and more, you should press the [bt.fetchmeta.txt; button.
-mg.infotutor$b     = All of the buttons should have a longer description if you need a refresher, just hover the mouse over them to view it
+mg.infotutor$b = All of the buttons should have a longer description if you need a refresher, just hover the mouse over them to view it
+mg.infotutor$c = Press the [sy.generic.info_i; button to view this tutorial again
 
 mg.confirm$rl  = Are you sure you want to reload? Any unsaved changes will be lost
