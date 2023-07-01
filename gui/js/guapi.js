@@ -45,7 +45,11 @@ Object.assign(globalThis.$guapi, {
         );
     },
     _promises: [],
-    /* top-level functions */
+    /* top-level */
+    /** values **/
+    debug: $bridge.is_debug,
+    flags: $bridge.get_flags,
+    /** functions **/
     uuid: $bridge.uuid,
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
         /* dtype: one of "file", "save", or "folder" */
@@ -60,4 +64,14 @@ $guapi._add("Magic",  "M", "./guapi/magic.js");
 $guapi._add("mods",   "m", "./guapi/mods.js");
 
 // final promise
-Promise.all($guapi._promises).then($guapi._resolve);
+Promise.all($guapi._promises).then(async function() {
+    $guapi.debug = await $guapi.debug(); // resolve whether or not we are running debug
+    $guapi.flags = new Set(await $guapi.flags());
+    if (($guapi.debug && !$guapi.flags.has("nodebug")) || $guapi.flags.has("debug"))
+        await import("./guapi/insert_debug.js").catch(e => $error(
+            "import",
+            $error.code_from_error(e),
+            `An error occured whilst attempting to insert debug control:\n ${e.message}`,
+        ));
+    $guapi._resolve();
+});

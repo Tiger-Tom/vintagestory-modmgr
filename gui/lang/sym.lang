@@ -1,3 +1,5 @@
-sy.generic.info_i = ⓘ
-sy.generic.reload = ⟳
-sy.generic.x      = ✖
+sy.bt.lang   = A文
+sy.bt.info_i = ⓘ
+sy.bt.new    = ◳
+sy.bt.reload = ⟳
+sy.bt.close  = ✖

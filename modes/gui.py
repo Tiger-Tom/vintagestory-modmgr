@@ -42,7 +42,7 @@ has_builtin_gui = os.path.exists(builtin_gui_dir)
 
 #> Base Hooks
 class BaseHook:
-    __slots__ = ('ns', 'frozen', 'splash', 'Mod', 'guapi', 'window', 'webview')
+    __slots__ = ('ns', 'frozen', 'splash', 'Mod', 'guapi', 'webview')
     def __init__(self, ns: argparse.Namespace, is_frozen: bool, splash=splash):
         self.ns = ns; self.Mod = Mod; self.frozen = is_frozen
         self.guapi = None; self.window = None; self.webview = None
@@ -63,7 +63,6 @@ class BaseHook:
     def post_window_created(self, w: 'webview.Window'):
         '''called after webview.create_window'''
         eprint(f'Window created: {w}'); self.splash('Finished setting up window')
-        self.window = w
     def pre_webview_start(self, wv: 'webview'):
         '''called before webview.start, return value updates default kwargs'''
         eprint(f'WebView about to start: {wv}'); self.splash('Setting up Python WebView')
@@ -113,6 +112,7 @@ def add_arguments(p: argparse.ArgumentParser):
     if not cache_err: p.add_argument('--clear-cache', action='store_true', help=f'Tries to clear the cache on Linux by removing {cache_dir_base}')
     else: p.add_argument('--clear-cache', action='store_const', const=False, default=False, help=f'Would clear the cache, but currently has no effect because {cache_err}')
     p.add_argument('--guapi', '--api', default=None, help='The Python module of the API to provide to the GUI (GU/API) (defaults to modes/guapi.py). Additionally, this file provides hooks that can modify the way the program behaves in various ways')
+    p.add_argument('flags', nargs='*', help='Flags to pass to the webapp through the GU/API')
     #p.add_argument('initial_dir', metavar='path', nargs='?', default=None, help='The directory to start in (optional)')
 def command(ns: argparse.Namespace):
     splash('Loading GUI')
@@ -153,7 +153,7 @@ def command(ns: argparse.Namespace):
     #try:
     if True: ####################### traceback
         splash('Setting up GU/API')
-        ga = gpi.GUAPI(**({'mod': Mod} | hook.pre_api_create())); hook.post_api_create(ga)
+        ga = gpi.GUAPI(**({'mod': Mod, 'debug': ns.debug} | hook.pre_api_create())); hook.post_api_create(ga)
         splash('Creating window')
         hook.post_window_created(webview.create_window(**({'url': ns.gui, 'js_api': ga} | hook.pre_window_created())))
         

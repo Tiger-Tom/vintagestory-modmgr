@@ -6,6 +6,9 @@ globalThis.$lang = {
     /* parsing the lang file */
     escaped_linebreak: /[^\S\r\n]*[^\\]\\([^\r\n]*)\r?\n[^\S\r\n]*/g,
     line_pattern: /^[^\S\n]*([\w\.$]+)[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/gm,
+    /* parsing the pack file */
+    pack_name: /^#pack\.name:(.*)$/m,
+    pack_cred: /^#pack\.desc:(.*)$/m,
     /* modified fields */
     fields_lenient: [ // element can have children (feels kind of wrong to write)
         "alt", "cite", "label", "placeholder", "title", ],
@@ -14,6 +17,8 @@ globalThis.$lang = {
     /* formatting */
     do_not_format: [
         "_flags", "_config", ],
+    /* backup and restore */
+    backup_attr: "$_LANG_BACKUP",
     /** end of sorta-config **/
     /* functions (unset) */
     loads: undefined, load: undefined,
@@ -24,7 +29,7 @@ globalThis.$lang = {
     /* for errors */
     _err: (key, s) => $error("language", `${key}:${s}`, `[${s}] TRANSLATION NOT FOUND: ${key}`) || `!${s}{${key}}`,
     /* unbuilt lang */
-    trans: {_flags: undefined, _config: undefined, mg: {}}, _trans: new Set(),
+    trans: {}, _trans: new Set(),
     _trans_subobject_toString: function() {
         if (this.$VALUE === undefined) return $lang._err(this.$INDEX, 7 /* 7 looks sorta like t, for toString */);
         /*let str = "";
@@ -34,9 +39,9 @@ globalThis.$lang = {
         else                   return str +  this.$VALUE;*/
         return this.$VALUE;
     },
-    _trans_subobject_valueOf: () => parseInt(this.$VALUE),
 };
 
+// apply langs to text
 globalThis.$l = function(text) {
     if (typeof text !== "string") return text;
     let t = text;
@@ -50,10 +55,11 @@ globalThis.$l = function(text) {
         });
     return t;
 }; Object.assign($l, $lang.trans);
-
-globalThis.$lf = $l._flags = k => $l._flags[k]?.valueOf();
-globalThis.$lc = $l._config = k => $l._config[k]?.valueOf();
-
+$lang.trans = $l;
+// get flags / config
+globalThis.$lf = k => parseInt($l._flags?.[k]?.$VALUE);
+globalThis.$lc = k => parseInt($l._config?.[k]?.$VALUE);
+// loading language files / packs
 $lang.loads = async function(langs, sync=true, applyall=true) {
     if (sync)
         for (let l of langs)
@@ -62,20 +68,20 @@ $lang.loads = async function(langs, sync=true, applyall=true) {
         await Promise.all(langs.map(l => $lang.load(l, false)));
     if (applyall) return $lang.applyALL();
 };
-
-$lang.load = async function(lang, applyall=true, resetflags=true) {
+$lang.load = async function(lang, applyall=false, resetflags=true, already_fetched=false) {
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
-    let uri = `lang/${lang}.lang`;
-    console.info(`Fetching lang at ${uri}`);
-    let text = (await (await fetch(uri)).text()).replaceAll($lang.escaped_linebreak, "$1");
+    if (!alreadyfetched) {
+        let uri = `lang/${lang}.lang`;
+        console.info(`Fetching lang at ${uri}`);
+        let text = (await (await fetch(uri)).text());
+    } else let text = lang;
+    text = text.replaceAll($lang.escaped_linebreak, "$1");
     for (let [_,key,val] of text.matchAll($lang.line_pattern)) {
-        //console.log(key); console.log(val);
         let o = $l,
             ks = key.split($lang.key_split_char);
         for (let k in ks)
             o = (o[ks[k]] = o[ks[k]] || {
                 toString: $lang._trans_subobject_toString,
-                valueOf: $lang._trans_subobject_valueOf,
                 /*k is a string for some reason... probably a "key", not an index?*/
                 $INDEX: ks.slice(0, ++k).join($lang.key_split_char),
             });
@@ -96,17 +102,47 @@ $lang.load = async function(lang, applyall=true, resetflags=true) {
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
     if (applyall) return $lang.applyALL();
 };
-
+/// packs
+$lang.loadpacks = async function(packs) {
+    let ploaded = {};
+    $lang.pack_name[1];
+    $lang.pack_cred[1];
+    Promise.all(packs.map(p => fetch(`lang/packs/${p}.langp`).then(async function(r) {
+        let t = r.text();
+        ploadedt.match($lang.pack_name)[1]]
+    })));
+    for (let p of packs)
+        await fetch(`lang/packs/${p}.langp`);
+};
+$lang.select_pack = async function() {};
+// applying languages to elements
 $lang.applyALL = async function() {
     if (document.readyState === "loading")
         await new Promise(resolve => window.addEventListener("DOMContentLoaded", resolve));
     $lang.apply(document.body);
 };
 $lang.apply = async function(elem=document.body) {
+    function mutate_field(elem, field) {
+        if (elem[field] === undefined) return;
+        if (elem[$lang.backup_attr] === undefined) elem[$lang.backup_attr] = {};
+        if (elem[$lang.backup_attr][field] === undefined)
+            elem[$lang.backup_attr][field] = elem[field];
+        elem[field] = $l(elem[field]);
+    }
     let p = Promise.all(Array.from(elem.children || []).map($lang.apply));
     for (let r = 0; r < ($lc("passes") || 1); r++)
-        $lang.fields_lenient.forEach(f => elem[f] && (elem[f] = $l(elem[f])));
-    if (elem.children.length) return p;
+        $lang.fields_lenient.forEach(f => mutate_field(elem, f));
+    if (elem.children.length) {
+        await p; return;
+    }
     for (let r = 0; r < ($lc("passes") || 1); r++)
-        $lang.fields_strict.forEach(f => elem[f] && (elem[f] = $l(elem[f])));
+        $lang.fields_strict.forEach(f => mutate_field(elem, f));
+    await p;
 };
+$lang.unapply = async function(elem=document.body, recurse=true) {
+    if (elem[$lang.backup_attr] === undefined) return;
+    Object.assign(elem, elem[$lang.backup_attr]);
+    elem[$lang.backup_attr] = undefined;
+    if (recurse && elem.hasChildNodes())
+        await Promise.all(Array.from(elem.children || []).forEach($lang.unapply));
+}

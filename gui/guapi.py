@@ -13,14 +13,23 @@ import packaging # version comparison
 #> Hooks
 def hook_factory(basehook: type):
     class Hook(basehook):
+        def pre_api_create(self):
+            return super().pre_api_create() | {
+                'hooks': self,
+                'flags': self.ns.flags,
+            }
         def pre_window_created(self):
             return super().pre_window_created() | {
                 'title': 'vintagestory-modmgr GUI',
                 'confirm_close': True,
             }
-        def post_window_created(self, w: 'webview.Window'):
+        def pre_dupwindow_created(self):
+            return self.pre_window_created() | {}
+        def post_window_created(self, w: 'webview.Window', *, main = True):
             super().post_window_created(w)
-            self.guapi.windows['main'] = w
+            if main: self.guapi.windows['main'] = w
+        def post_dupwindow_created(self, w: 'webview.Window'):
+            self.post_window_created(w, main=False)
         def pre_webview_start(self, wv: 'webview'):
             self.guapi.webview = wv
             return super().pre_webview_start(wv) | {
@@ -44,15 +53,16 @@ class MagicNotFound(KeyError): pass
 #> Bases
 class GUAPI_Layout:
     __slots__ = (
-        'webview', 'Mod',          # base
-        'store',                   # Variables
-        'windows',                 # Windows
-        'magic', #'magic_claimed', # Magic
+        'webview', 'Mod', 'debug', 'hooks', 'flags',  # base
+        'store',                                      # Variables
+        'windows',                                    # Windows
+        'magic', #'magic_claimed',                    # Magic
     )
 class GUAPI_Base(GUAPI_Layout):
     __slots__ = ()
-    def __init__(self, mod: 'Mod'):
+    def __init__(self, *, mod: 'Mod', hooks: 'Hook', debug: bool, flags: tuple[str]):
         self.Mod = mod; self.webview = None
+        self.hooks = hooks; self.debug = debug; self.flags = flags
     # Introspection
     @classmethod
     def _get_exposed_methods(cls):
@@ -61,6 +71,8 @@ class GUAPI_Base(GUAPI_Layout):
     # Exposed base methods
     @classmethod
     def uuid(_): return str(uuid.uuid4())
+    def is_debug(self): return self.debug
+    def get_flags(self): return self.flags
 
 class GUAPI_BaseVariables(GUAPI_Base):
     __slots__ = ()
@@ -77,6 +89,28 @@ class GUAPI_BaseWindows(GUAPI_BaseVariables):
         def __getitem__(self, key):
             if key not in self: raise WindowNotFound(f'Window {key} does not exist')
             return super().__getitem__(key)
+    def _win_extract_data(self, w: 'webview.Window'):
+        return {
+            'title': w.title,
+            'url': w.get_current_url(),
+            'height': w.height, 'width': w.width,
+            'resizable': w.resizable,
+            'fullscreen': w.fullscreen,
+            'min_size': w.min_size,
+            'hidden': w.hidden,
+            'frameless': w.frameless,
+            'easy_drag': w.easy_drag,
+            'minimized': w.minimized,
+            'on_top': w.on_top,
+            'confirm_close': w.confirm_close,
+            'background_color': w.background_color,
+            'text_select': w.text_select,
+            'transparent': w.transparent,
+        }
+    def _win_subid_from(self, baseid: str) -> str:
+        id = f'{baseid}%d'; add = 0
+        while (id % add) in self.windows: add += 1
+        return id % add
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs); self.windows = self._win_Windows()
 
@@ -187,6 +221,17 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         try: self.windows[id].destroy()
         except KeyError: pass # if the user manually destroyed it
         del self.windows[id]
+    def win_duplicate(self, id: str) -> str:
+        '''Creates a duplicate of the window with the given ID'''
+        self.hooks.pre_dupwindow_created()
+        nid = self._win_subid_from(f'{id}:dup_')
+        self.windows[nid] = self.webview.create_window(js_api=self, **self._win_extract_data(self.windows[id]))
+        self.windows[nid].evaluate_js(f'globalThis.$wid = "{nid}"')
+        self.hooks.post_dupwindow_created(self.windows[nid])
+        return nid
+    def win_ls(self) -> tuple[str]:
+        '''Lists every single open window'''
+        return tuple(self.windows.keys())
     # Executing Javascript
     def win_execute(self, id: str, js: str, store: str | None, callback: str | None) -> typing.Any:
         '''Executes Javascript inside of the specified window, returning the result (WITHOUT resolving promises). Raises AttributeError if the window doesn't exist
@@ -200,7 +245,6 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         return self.windows[id].evaluate_js(js, cb)
     def win_call(self, wid: str, mid: str, *args: tuple[typing.Any]):
         '''Calls a magic Javascript function inside of the specified window, overriding whichever target ID it was created with unless the specified window ID is None
-
 
             Raises MagicNotFound if the magic function does not exist
             Raises WindowNotFound if the window does not exist
@@ -325,10 +369,19 @@ class GUAPI_Mods(GUAPI_BaseMagic):
 
 #> GU/API >/
 class GUAPI(GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base):
-    __slots__ = ()
+    __slots__ = ('locks',)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.locks = set()
     # Directory / file manipulation
     dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
     def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
         return self.windows[wid].create_file_dialog(getattr(self.webview, self.dialog_types[dtype]), **kwargs)
+    print('not implemented in JS: lock')
+    def lock(self, name: str) -> bool:
+        if name in self.locks: return False
+        self.locks.add(name); return True
+    print('not implemented in JS: unlock')
+    def unlock(self, name: str) -> bool:
+        if name not in self.locks: return False
+        self.locks.remove(name); return True

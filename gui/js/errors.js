@@ -8,7 +8,7 @@ globalThis.$error = function(where, code, msg, attach_stack_if_present=true) {
 $error._formatmsg = (where, code, msg) => `--An error occured in "${where}"--\n${msg}\n--Error Code "${where}/${code}"--`;
 
 $error.code_from_event = e => $error.code_from_error(e.error);
-$error.code_from_error = e => `${e.sourceURL ? e.sourceURL.split("/").slice(-1) : "unknown_source"}#L${e.line}C${e.column}:${e.name}`;
+$error.code_from_error = e => `${e?.sourceURL ? e.sourceURL.split("/").slice(-1) : "unknown_source"}#L${e?.line || "_"}C${e?.column || "_"}:${e?.name}`;
 
 $error._behavior_handlers = {
     "silent": () => void(0),

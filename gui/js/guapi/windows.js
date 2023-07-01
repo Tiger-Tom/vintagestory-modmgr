@@ -1,8 +1,10 @@
 const Window = class {
-    constructor(id) { this.id = id; }
+    constructor(id=undefined) { this.id = id || $wid; }
     toString() { return this.id; }
     static async create(title, kwargs={}) { return new Window(await $bridge.win_create(title, kwargs)); }
     async close() { await $bridge.win_close(this.id); }
+    async duplicate() { return await $bridge.win_duplicate(this.id); }
+    static async ls() { return await $bridge.win_ls(); }
     
     async execute(js,
             store /* the result will be placed in this variable after promises are resolved */ = null,
