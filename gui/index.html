@@ -1,8 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <!-- error management -->
+    <!-- base libraries -->
     <script src="js/errors.js"></script>
+    <script src="js/storage.js"></script>
     <!-- style loading -->
     <link rel="stylesheet" href="style/style.css"> <!-- style for my website from when I was about 14 -->
     <link rel="stylesheet" href="style/resizer.css">
@@ -20,7 +21,10 @@
             //"template",
             ], false, false).then(async function() { await $lang.loadpacks([ // lang packs
             "en",
-            ]) }).then($lang.__ready_resolve);
+            ]) }).then(async function() {
+                $lang.select_pack($sto.get("language.selection", "en"));
+                $lang.applyALL();
+            }).then($lang.__ready_resolve);
         });
         globalThis.lalert = text => alert($l(text));
     </script>
@@ -53,6 +57,7 @@
             if (mdir !== null) $e.mod_dir.value = mdir;
             set_all_by_cname("d_w_chdir", "disabled", false);
         }
+        function changed_lang() {}
         
         async function find_mods() {
             set_all_by_cname("d_w_fmods", "disabled", true);
@@ -103,6 +108,17 @@
     <!-- top bar-->
     <div style="width: 100%;">
         <div style="float: left;">
+            <!--<span style="white-space: nowrap;" onclick="$e.lang_swap.click();" class="clickable outline" title="[bt.lng.dsc;">[sy.bt.lang;</span>
+                <div style="/*display: none;*/">
+                    <select id="lang_swap">
+                        <option value=0>zero</option>
+                        <option value=1>one</option>
+                        <option value=2>two</option>
+                    </select>
+                </div>-->
+            <select id="lang_swap" onchange="changed_lang();">
+                <option>[loading...]</option>
+            </select>
             <span onclick="new $guapi.Window().duplicate();" style="color: #D0D0D0; cursor: help;" class="outline" title="[bt.new.dsc;">[sy.bt.new;</span>
         </div><div style="float: right;">
             <span onclick="tutorial();" style="color: #00FF00;" class="clickable outline" title="[bt.tutorial.dsc">[sy.bt.info_i;</span>

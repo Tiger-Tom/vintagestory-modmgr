@@ -27,9 +27,11 @@
         }
     </style>
     <script>
-        window.onload = function() {
+        window.onload = async function() {
             $e.c_wid.textContent = top.$wid;
             $e.c_url.textContent = top.location.href;
+            await top.$lang.__ready;
+            $e.l_pck.textContent = top.$l._pack.name;
         };
     </script>
 </head>
@@ -52,6 +54,9 @@
     </div>
     <div>
         <b>URL:</b> <code id="c_url" >[waiting to load]</code>
+    </div>
+    <div>
+        <b>Lang Pack:</b> <code id="c_lpk">[waiting to load]</code>
     </div>
 </body>
 </html>

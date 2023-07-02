@@ -7,8 +7,9 @@ globalThis.$lang = {
     escaped_linebreak: /[^\S\r\n]*[^\\]\\([^\r\n]*)\r?\n[^\S\r\n]*/g,
     line_pattern: /^[^\S\n]*([\w\.$]+)[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/gm,
     /* parsing the pack file */
-    pack_name: /^#pack\.name:(.*)$/m,
-    pack_cred: /^#pack\.desc:(.*)$/m,
+    pack_id: /^[^\S\n]*_pack\.id[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
+    pack_name: /^[^\S\n]*_pack\.name[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
+    pack_cred: /^[^\S\n]*_pack\.credit[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
     /* modified fields */
     fields_lenient: [ // element can have children (feels kind of wrong to write)
         "alt", "cite", "label", "placeholder", "title", ],
@@ -16,7 +17,7 @@ globalThis.$lang = {
         "textContent", ],
     /* formatting */
     do_not_format: [
-        "_flags", "_config", ],
+        "_pack", "_flags", "_config", ],
     /* backup and restore */
     backup_attr: "$_LANG_BACKUP",
     /** end of sorta-config **/
@@ -29,7 +30,7 @@ globalThis.$lang = {
     /* for errors */
     _err: (key, s) => $error("language", `${key}:${s}`, `[${s}] TRANSLATION NOT FOUND: ${key}`) || `!${s}{${key}}`,
     /* unbuilt lang */
-    trans: {}, _trans: new Set(),
+    trans: {}, _trans: new Set(), packs: {},
     _trans_subobject_toString: function() {
         if (this.$VALUE === undefined) return $lang._err(this.$INDEX, 7 /* 7 looks sorta like t, for toString */);
         /*let str = "";
@@ -106,14 +107,24 @@ $lang.load = async function(lang, applyall=false, resetflags=true, already_fetch
 /// packs
 $lang.loadpacks = async function(packs) {
     let ploaded = {};
-    $lang.pack_name [1];
-    $lang.pack_cred [1];
     await Promise.all(packs.map(p => fetch(`lang/packs/${p}.langp`)
         .then(r => r.text())
-        .then(t => ploaded[t.match($lang.pack_name)[1]] = t)
+        .then(function(t) {
+            let id = t.match($lang.pack_id)[1];
+            ploaded[id] = {
+                id: id, data: t,
+                name: t.match($lang.pack_name)[1],
+                credits: t.match($lang.pack_cred)[1],
+            };
+        })
     ));
+    Object.assign($lang.packs, ploaded);
 };
-$lang.select_pack = async function() {};
+$lang.select_pack = async function(id) {
+    $lang.packs[id]
+    $lang.load($lang.packs[id].data, false, true, true);
+    $lang.strip(); $lang.applyALL();
+};
 // applying languages to elements
 $lang.applyALL = async function() {
     if (document.readyState === "loading")

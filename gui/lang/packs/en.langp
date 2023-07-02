@@ -1,4 +1,5 @@
-#pack.name:English (Original)
+_pack.id     = en
+_pack.name   = English (Original)
 _pack.credit = Original English Language Pack By @shae1881
 
 # set needed config
