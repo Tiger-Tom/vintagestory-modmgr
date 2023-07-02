@@ -69,7 +69,7 @@ jobs:
           - name: Install PyInstaller
             run: pip install -U pyinstaller pyinstaller-hooks-contrib
           - name: Install Requirements
-            run: pip install -r requirements.txt
+            run: pip install -r requirements.txt -r optional-requirements.txt
             # Build Sans GUI
           - name: Bundle With PyInstaller (Sans GUI) For ${{ matrix.os.title }}
             run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_sans }} ${{ matrix.os.sans_gui }} --name ${{ format(matrix.os.exec, '') }}

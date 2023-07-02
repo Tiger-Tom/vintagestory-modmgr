@@ -3,10 +3,10 @@
 #> Imports
 import argparse # argument handling
 
-from modes import update
-from modes import import_export as impexp
-from modes import gui
-from modes import debug
+from lib.modes import update
+from lib.modes import import_export as impexp
+from lib.modes import gui
+from lib.modes import debug
 #</Imports
 
 #> Main >/

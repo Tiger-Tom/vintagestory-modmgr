@@ -70,11 +70,12 @@ $lang.loads = async function(langs, sync=true, applyall=true) {
 };
 $lang.load = async function(lang, applyall=false, resetflags=true, already_fetched=false) {
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
-    if (!alreadyfetched) {
+    let text = lang;
+    if (!already_fetched) {
         let uri = `lang/${lang}.lang`;
         console.info(`Fetching lang at ${uri}`);
-        let text = (await (await fetch(uri)).text());
-    } else let text = lang;
+        text = (await (await fetch(uri)).text());
+    }
     text = text.replaceAll($lang.escaped_linebreak, "$1");
     for (let [_,key,val] of text.matchAll($lang.line_pattern)) {
         let o = $l,
@@ -105,14 +106,12 @@ $lang.load = async function(lang, applyall=false, resetflags=true, already_fetch
 /// packs
 $lang.loadpacks = async function(packs) {
     let ploaded = {};
-    $lang.pack_name[1];
-    $lang.pack_cred[1];
-    Promise.all(packs.map(p => fetch(`lang/packs/${p}.langp`).then(async function(r) {
-        let t = r.text();
-        ploadedt.match($lang.pack_name)[1]]
-    })));
-    for (let p of packs)
-        await fetch(`lang/packs/${p}.langp`);
+    $lang.pack_name [1];
+    $lang.pack_cred [1];
+    await Promise.all(packs.map(p => fetch(`lang/packs/${p}.langp`)
+        .then(r => r.text())
+        .then(t => ploaded[t.match($lang.pack_name)[1]] = t)
+    ));
 };
 $lang.select_pack = async function() {};
 // applying languages to elements

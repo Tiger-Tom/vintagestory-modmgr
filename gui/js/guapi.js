@@ -34,7 +34,7 @@ Object.assign(globalThis.$guapi, {
         );
         this._promises.push(
             new Promise((resolve) => 
-                import(module).then(m => {
+                module.then(m => {
                     this[longname] = m.default;
                     this[shortname] = m.default;
                     if ("promises" in m)
@@ -47,8 +47,9 @@ Object.assign(globalThis.$guapi, {
     _promises: [],
     /* top-level */
     /** values **/
-    debug: $bridge.is_debug,
-    flags: $bridge.get_flags,
+    debug: undefined,
+    flag: (key) => $guapi.flags.has(key),
+    flags: undefined,
     /** functions **/
     uuid: $bridge.uuid,
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
@@ -58,16 +59,16 @@ Object.assign(globalThis.$guapi, {
 });
 
 // add submodules
-$guapi._add("Var",    "V", "./guapi/vars.js");
-$guapi._add("Window", "W", "./guapi/windows.js");
-$guapi._add("Magic",  "M", "./guapi/magic.js");
-$guapi._add("mods",   "m", "./guapi/mods.js");
+$guapi._add("Var",    "V", import("./guapi/vars.js"));
+$guapi._add("Window", "W", import("./guapi/windows.js"));
+$guapi._add("Magic",  "M", import("./guapi/magic.js"));
+$guapi._add("mods",   "m", import("./guapi/mods.js"));
 
 // final promise
 Promise.all($guapi._promises).then(async function() {
-    $guapi.debug = await $guapi.debug(); // resolve whether or not we are running debug
-    $guapi.flags = new Set(await $guapi.flags());
-    if (($guapi.debug && !$guapi.flags.has("nodebug")) || $guapi.flags.has("debug"))
+    $guapi.debug = await $bridge.is_debug(); // resolve whether or not we are running debug
+    $guapi.flags = new Set(await $bridge.get_flags());
+    if (($guapi.debug && !$guapi.flag("nodebug")) || $guapi.flag("debug"))
         await import("./guapi/insert_debug.js").catch(e => $error(
             "import",
             $error.code_from_error(e),

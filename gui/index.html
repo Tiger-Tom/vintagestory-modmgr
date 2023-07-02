@@ -4,24 +4,23 @@
     <!-- error management -->
     <script src="js/errors.js"></script>
     <!-- style loading -->
-    <style id="style_no_bg">*{background-image:none!important}</style> <!-- prevents BG images from loading until later -->
     <link rel="stylesheet" href="style/style.css"> <!-- style for my website from when I was about 14 -->
     <link rel="stylesheet" href="style/resizer.css">
-    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css"> <!-- steal that style -->
+    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css" noinline> <!-- steal that style -->
     <!-- language loading -->
     <script src="lang/lang.js"></script>
     <script>
         $lang.__ready = new Promise(resolve => $lang.__ready_resolve = resolve);
-        $lang.loads([                              // sync loads
+        $lang.loads([ // sync loads
             //"debug/debug_flags"
         ], true, false).then(async function() {
-            await $lang.loads([                    // async loads
+            await $lang.loads([ // async loads
             //"no_keys",
             "sym", "modfmt",
             //"template",
-            ], false, false).then($lang.loadpacks[ // lang packs
+            ], false, false).then(async function() { await $lang.loadpacks([ // lang packs
             "en",
-            ]).then($lang.__ready_resolve);
+            ]) }).then($lang.__ready_resolve);
         });
         globalThis.lalert = text => alert($l(text));
     </script>
@@ -121,7 +120,7 @@
     <ul id="mod_container" class="hidden-without-child_li"><br></ul>
     <!-- extended mod details (from API) -->
     <div id="details_container"><br>
-        <span id="details_close_button" class="clickable" onclick="close_details();">[sy.generic.x;</span>
+        <span id="details_close_button" class="clickable" onclick="close_details();">[sy.bt.close;</span>
         <iframe id="details"></iframe>
         <div id="details_handle" class="resizer-outer"><div class="resizer-inner"></div></div>
     </div>
