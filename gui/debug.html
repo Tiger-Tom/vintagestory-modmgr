@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script src="./js/elements/element_helpers.js" defer></script>
+    <style>
+        * {
+            color: #00FF00;
+            background-color: #000000;
+        }
+        hr {
+            width: 100%;
+        }
+        button {
+            padding: 0px 1px; border: none;
+            cursor: pointer;
+        }
+        .flexy {
+            width: 100%;
+            display: flex; flex-flow: row;
+        }
+        .collapsible {
+            max-height: 20px; overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+        .collapsible:hover {
+            max-height: 60px;
+        }
+    </style>
+    <script>
+        window.onload = function() {
+            $e.c_wid.textContent = top.$wid;
+            $e.c_url.textContent = top.location.href;
+        };
+    </script>
+</head>
+<body>
+    <div class="collapsible">
+        <div class="flexy"><hr><b>|FUNCTIONS|</b><hr></div>
+        <div>
+            <button onclick="top.$lang.applyALL();">&gt; Apply Languages</button>
+            <button onclick="top.$lang.strip();">&gt; Strip Languages</button>
+        </div>
+        <div>
+            <button onclick="top.$lang.load(prompt('Enter lang code'), false);">&gt; Load New Lang File</button>
+            <button onclick="top.$lang.load_packs([prompt('Enter lang pack code')]);">&gt; Load New Lang Pack</button>
+            <button onclick="top.$lang.select_pack(prompt('Enter lang pack code'));">&gt; Select Lang Pack</button>
+        </div>
+    </div>
+    <div class="flexy"><hr><b>|VALUES|</b><hr></div>
+    <div title="Window ID">
+        <b>WID:</b> <code id="c_wid">[waiting to load]</code>
+    </div>
+    <div>
+        <b>URL:</b> <code id="c_url" >[waiting to load]</code>
+    </div>
+</body>
+</html>

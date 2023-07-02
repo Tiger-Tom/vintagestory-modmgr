@@ -68,11 +68,12 @@ $guapi._add("mods",   "m", import("./guapi/mods.js"));
 Promise.all($guapi._promises).then(async function() {
     $guapi.debug = await $bridge.is_debug(); // resolve whether or not we are running debug
     $guapi.flags = new Set(await $bridge.get_flags());
-    if (($guapi.debug && !$guapi.flag("nodebug")) || $guapi.flag("debug"))
-        await import("./guapi/insert_debug.js").catch(e => $error(
-            "import",
-            $error.code_from_error(e),
-            `An error occured whilst attempting to insert debug control:\n ${e.message}`,
-        ));
+    if (($guapi.debug && !$guapi.flag("nodebug")) || $guapi.flag("debug")) {
+        let ifr = document.createElement("iframe"); ifr.src = "./debug.html";
+        document.body.appendChild(ifr); document.body.insertBefore(ifr, document.body.firstChild);
+        ifr.addEventListener("load", function() {
+            ifr.style.height = ifr.contentDocument.documentElement.scrollHeight+"px";
+        }); ifr.style.width = "100%";
+    }
     $guapi._resolve();
 });

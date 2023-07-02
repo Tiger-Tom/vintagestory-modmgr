@@ -122,7 +122,7 @@ $lang.applyALL = async function() {
 };
 $lang.apply = async function(elem=document.body) {
     function mutate_field(elem, field) {
-        if (elem[field] === undefined) return;
+        if ((elem[field] === undefined) || (elem[field] === "")) return;
         if (elem[$lang.backup_attr] === undefined) elem[$lang.backup_attr] = {};
         if (elem[$lang.backup_attr][field] === undefined)
             elem[$lang.backup_attr][field] = elem[field];
@@ -138,10 +138,11 @@ $lang.apply = async function(elem=document.body) {
         $lang.fields_strict.forEach(f => mutate_field(elem, f));
     await p;
 };
-$lang.unapply = async function(elem=document.body, recurse=true) {
-    if (elem[$lang.backup_attr] === undefined) return;
-    Object.assign(elem, elem[$lang.backup_attr]);
-    elem[$lang.backup_attr] = undefined;
+$lang.strip = async function(elem=document.body, recurse=true) {
+    if (elem[$lang.backup_attr] !== undefined) {
+        Object.assign(elem, elem[$lang.backup_attr]);
+        elem[$lang.backup_attr] = undefined;
+    }
     if (recurse && elem.hasChildNodes())
-        await Promise.all(Array.from(elem.children || []).forEach($lang.unapply));
+        await Promise.all(Array.from(elem.children || []).map(e => $lang.strip(e, true)));
 }
