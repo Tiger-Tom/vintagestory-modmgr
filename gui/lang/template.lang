@@ -1,44 +1,22 @@
- ## flags, ##
-
-# debug
-
- ## modfmt ##
+## modfmt ##
 
 # content
 mf.content.withversion =
 mf.content.withoutvers =
+
 # tooltip
 mf.tooltip =
-# default
-mf.content.default.id      =
-mf.content.default.name    =
-mf.content.default.desc    =
-mf.content.default.version =
-mf.content.default.source  =
 
- ## symbol ##
+# defaults
+mf.default.id      =
+mf.default.name    =
+mf.default.desc    =
+mf.default.version =
+mf.default.source  =
 
-sy.generic.info_i =
-sy.generic.reload =
-sy.generic.x      =
-
- ## common ##
-
-# message
-mg.first       =
-mg.tutor$a     =
-mg.tutor$b     =
-mg.tutor$again =
-mg.confirm$rl  =
-
-# button
-bt.chdir.txt     =
-bt.chdir.dsc     =
-bt.fetchmeta.txt =
-bt.fetchmeta.dsc =
-bt.reload.dsc    =
-bt.search.txt    =
-bt.search.dsc    =
-bt.tutorial.dsc  =
-# input
-in.moddir.ph =
+## symbol ##
+sy.bt.lang   =
+sy.bt.info_i =
+sy.bt.new    =
+sy.bt.reload =
+sy.bt.close  =

@@ -7,24 +7,24 @@
     <!-- style loading -->
     <link rel="stylesheet" href="style/style.css"> <!-- style for my website from when I was about 14 -->
     <link rel="stylesheet" href="style/resizer.css">
-    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css" noinline> <!-- steal that style -->
+    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css" inline-strip inline-urls> <!-- steal that style -->
     <!-- language loading -->
     <script src="lang/lang.js"></script>
     <script>
-        $lang.__ready = new Promise(resolve => $lang.__ready_resolve = resolve);
-        $lang.loads([ // sync loads
-            //"debug/debug_flags"
-        ], true, false).then(async function() {
-            await $lang.loads([ // async loads
-            //"no_keys",
-            "sym", "modfmt",
-            //"template",
-            ], false, false).then(async function() { await $lang.loadpacks([ // lang packs
-            "en",
-            ]) }).then(async function() {
-                $lang.select_pack($sto.get("language.selection", "en"));
-                $lang.applyALL();
-            }).then($lang.__ready_resolve);
+        $lang.__ready = new Promise(async function(resolve) {
+            await $lang.loads([     // sync loads
+                //"debug/debug_flags",
+            ], true);
+            await $lang.loads([     // async loads
+                //"no_keys",
+                "sym", "modfmt",
+                //"template",
+            ], false);
+            await $lang.loadpacks([ // lang packs
+                "en", 
+            ]);
+            await $lang.select_pack($sto.get("language.selection", "en"));
+            resolve();
         });
         globalThis.lalert = text => alert($l(text));
     </script>
@@ -93,10 +93,24 @@
     </style>
     <style> /* classes */
         .clickable { cursor: pointer; }
+        .sneaky-button {
+            all: initial; 
+            background: none; border: none;
+            padding: 1px;
+            height: 22px; font-size: 21px;
+            text-align: center;
+        }
+        .sneaky-button:hover {
+            background: none;
+        }
         
         .hidden-without-child_li { display: none; }
         .hidden-without-child_li:has(li) { display: unset; }
-        .outline { text-shadow: -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000, 1px 1px 0 #000000; }
+        .black-outline { text-shadow: -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000, 1px 1px 0 #000000; }
+        .color-outline { text-shadow: -1px -1px 0 var(--color), 1px -1px 0 var(--color), -1px 1px 0 var(--color), 1px 1px 0 var(--color); }
+        
+        footer { opacity: 80%; width: 100%; }
+        .floaty-foot { position: fixed; bottom: 4px; }
     </style>
     <style> /* "label" classes (do not have any style, but here for documentation purposes) */
         .d_u_guapi { /* disabled until GUAPI is ready */ }
@@ -108,21 +122,10 @@
     <!-- top bar-->
     <div style="width: 100%;">
         <div style="float: left;">
-            <!--<span style="white-space: nowrap;" onclick="$e.lang_swap.click();" class="clickable outline" title="[bt.lng.dsc;">[sy.bt.lang;</span>
-                <div style="/*display: none;*/">
-                    <select id="lang_swap">
-                        <option value=0>zero</option>
-                        <option value=1>one</option>
-                        <option value=2>two</option>
-                    </select>
-                </div>-->
-            <select id="lang_swap" onchange="changed_lang();">
-                <option>[loading...]</option>
-            </select>
-            <span onclick="new $guapi.Window().duplicate();" style="color: #D0D0D0; cursor: help;" class="outline" title="[bt.new.dsc;">[sy.bt.new;</span>
+            <button onclick="new $guapi.Window().duplicate();" style="color: #D0D0D0;" class="sneaky-button black-outline" title="[bt.new.dsc;">[sy.bt.new;</b>
         </div><div style="float: right;">
-            <span onclick="tutorial();" style="color: #00FF00;" class="clickable outline" title="[bt.tutorial.dsc">[sy.bt.info_i;</span>
-            <span onclick="reload();" style="color: #D0D0D0;" class="clickable outline" title="[bt.reload.dsc;">[sy.bt.reload;</button>
+            <button onclick="tutorial();" style="color: #00FF00; cursor: help;" class="sneaky-button black-outline" title="[bt.tutorial.dsc;">[sy.bt.info_i;</b>
+            <button onclick="reload();" style="color: #D0D0D0;" class="sneaky-button black-outline" title="[bt.reload.dsc;">[sy.bt.reload;</b>
         </div><br>
     </div>
     <!-- find and load mods -->
@@ -140,5 +143,9 @@
         <iframe id="details"></iframe>
         <div id="details_handle" class="resizer-outer"><div class="resizer-inner"></div></div>
     </div>
+    <!-- footer -->
+    <br>
+    <footer id="lang_conf" class="black-outline" style="float: left; color: #D0D0D0;">[lang loading...]</footer>
+    <cite style="right: 4px; --color: #FFFFFF66;" class="color-outline floaty-foot" title="[attr.dsc;">[attr;</cite>
 </body>
 </html>

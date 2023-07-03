@@ -20,6 +20,7 @@ globalThis.$lang = {
         "_pack", "_flags", "_config", ],
     /* backup and restore */
     backup_attr: "$_LANG_BACKUP",
+    mutated_class: "$_was_mutated_by_lang",
     /** end of sorta-config **/
     /* functions (unset) */
     loads: undefined, load: undefined,
@@ -61,15 +62,14 @@ $lang.trans = $l;
 globalThis.$lf = k => parseInt($l._flags?.[k]?.$VALUE);
 globalThis.$lc = k => parseInt($l._config?.[k]?.$VALUE);
 // loading language files / packs
-$lang.loads = async function(langs, sync=true, applyall=true) {
+$lang.loads = async function(langs, sync) {
     if (sync)
         for (let l of langs)
-            await $lang.load(l, false);
+            await $lang.load(l, true);
     else
         await Promise.all(langs.map(l => $lang.load(l, false)));
-    if (applyall) return $lang.applyALL();
 };
-$lang.load = async function(lang, applyall=false, resetflags=true, already_fetched=false) {
+$lang.load = async function(lang, resetflags=true, already_fetched=false) {
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
     let text = lang;
     if (!already_fetched) {
@@ -102,58 +102,84 @@ $lang.load = async function(lang, applyall=false, resetflags=true, already_fetch
         //console.debug(`Formatting complete: ${o.$VALUE}`);
     }
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
-    if (applyall) return $lang.applyALL();
 };
 /// packs
 $lang.loadpacks = async function(packs) {
     let ploaded = {};
-    await Promise.all(packs.map(p => fetch(`lang/packs/${p}.langp`)
-        .then(r => r.text())
-        .then(function(t) {
-            let id = t.match($lang.pack_id)[1];
-            ploaded[id] = {
-                id: id, data: t,
-                name: t.match($lang.pack_name)[1],
-                credits: t.match($lang.pack_cred)[1],
-            };
-        })
-    ));
+    await Promise.all(packs.map(async function(p) {
+        let t = await (await fetch(`lang/packs/${p}.langp`)).text();
+        let id = t.match($lang.pack_id)[1];
+        ploaded[id] = {
+            id: id, data: t,
+            name: t.match($lang.pack_name)[1],
+            credits: t.match($lang.pack_cred)[1],
+        };
+    }));
     Object.assign($lang.packs, ploaded);
 };
 $lang.select_pack = async function(id) {
-    $lang.packs[id]
-    $lang.load($lang.packs[id].data, false, true, true);
-    $lang.strip(); $lang.applyALL();
+    await $lang.load($lang.packs[id].data, false, true, true);
+    await $lang.strip(); await $lang.applyALL();
 };
 // applying languages to elements
 $lang.applyALL = async function() {
     if (document.readyState === "loading")
-        await new Promise(resolve => window.addEventListener("DOMContentLoaded", resolve));
-    $lang.apply(document.body);
+        await new Promise(resolve => addEventListener("DOMContentLoaded", resolve));
+    await $lang.apply(document.body);
 };
 $lang.apply = async function(elem=document.body) {
     function mutate_field(elem, field) {
         if ((elem[field] === undefined) || (elem[field] === "")) return;
-        if (elem[$lang.backup_attr] === undefined) elem[$lang.backup_attr] = {};
+        let n = $l(elem[field]);
+        if (n === elem[field]) return;
+        elem[$lang.backup_attr] = elem[$lang.backup_attr] || {};
         if (elem[$lang.backup_attr][field] === undefined)
             elem[$lang.backup_attr][field] = elem[field];
-        elem[field] = $l(elem[field]);
+        elem[field] = n; elem.classList.add($lang.mutated_class);
     }
     let p = Promise.all(Array.from(elem.children || []).map($lang.apply));
-    for (let r = 0; r < ($lc("passes") || 1); r++)
-        $lang.fields_lenient.forEach(f => mutate_field(elem, f));
+    for (let r = 0; r < ($lc("passes") || 1); r++) {console.log(r);
+        $lang.fields_lenient.forEach(f => mutate_field(elem, f));}
     if (elem.children.length) {
         await p; return;
     }
-    for (let r = 0; r < ($lc("passes") || 1); r++)
-        $lang.fields_strict.forEach(f => mutate_field(elem, f));
+    for (let r = 0; r < ($lc("passes") || 1); r++){console.info(r);
+        $lang.fields_strict.forEach(f => mutate_field(elem, f));}
     await p;
 };
 $lang.strip = async function(elem=document.body, recurse=true) {
-    if (elem[$lang.backup_attr] !== undefined) {
-        Object.assign(elem, elem[$lang.backup_attr]);
-        elem[$lang.backup_attr] = undefined;
+    async function _strip(e) {
+        if (e[$lang.backup_attr] === undefined) return;
+        Object.assign(e, e[$lang.backup_attr]);
+        e[$lang.backup_attr] = undefined;
     }
-    if (recurse && elem.hasChildNodes())
-        await Promise.all(Array.from(elem.children || []).map(e => $lang.strip(e, true)));
-}
+    await _strip(elem);
+    if (recurse)
+        await Promise.all(Array.from(elem.getElementsByClassName($lang.mutated_class) || []).map(_strip));
+};
+// config elements
+$lang.assign_config = function(elem) {
+    let id = `lang_config_${elem.id || ""}:`;
+    elem.innerHTML = "";
+    let sel = elem.appendChild(document.createElement("select"));
+    sel.style.float = "left"; sel.id = id+"selection";
+    for (let lp in $lang.packs) {
+        let o = document.createElement("option");
+        o.selected = lp === $l._pack.id.toString();
+        o.value = lp; o.innerText = `${o.selected ? $l("[sy.bt.lang; ") : ""}[${lp}] ${$lang.packs[lp].name}`;
+        sel.appendChild(o);
+    }
+    sel.onchange = async function() {
+        if (confirm($l("[mg.confirm.chl;"))) {
+            $sto.set("language.selection", sel.value);
+            $lang.select_pack(sel.value);
+            $lang.strip(); $lang.applyALL();
+            $lang.assign_config(elem);
+        } else
+            sel.value = $l._pack.id.toString();
+    };
+    elem.appendChild(document.createElement("span")).textContent = "\u{202F}";
+    let cred = elem.appendChild(document.createElement("cite"));
+    cred.style.float = "right"; cred.id = id+"credits";
+    cred.textContent = `${$l._pack.credit}`;
+};

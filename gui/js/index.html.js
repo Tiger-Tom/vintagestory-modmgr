@@ -4,5 +4,7 @@ $g.and_dom_ready.then(async function() {
     if (!$sto.set("message.shown.first", true)) {
         lalert("[mg.first;"); lalert("[mg.thanks;");
     }
-    if (!($guapi.debug || $guapi.flags("noinitialchdir"))) change_dir();
+    await $lang.__ready;
+    $lang.assign_config($e.lang_conf);
+    if (!($guapi.debug || $guapi.f("noinitialchdir"))) change_dir();
 });

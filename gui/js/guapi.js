@@ -48,7 +48,7 @@ Object.assign(globalThis.$guapi, {
     /* top-level */
     /** values **/
     debug: undefined,
-    flag: (key) => $guapi.flags.has(key),
+    flag: (key) => $guapi.flags.has(key), f: undefined,
     flags: undefined,
     /** functions **/
     uuid: $bridge.uuid,
@@ -66,9 +66,9 @@ $guapi._add("mods",   "m", import("./guapi/mods.js"));
 
 // final promise
 Promise.all($guapi._promises).then(async function() {
-    $guapi.debug = await $bridge.is_debug(); // resolve whether or not we are running debug
-    $guapi.flags = new Set(await $bridge.get_flags());
-    if (($guapi.debug && !$guapi.flag("nodebug")) || $guapi.flag("debug")) {
+    $g.flags = new Set(await $bridge.get_flags()); $g.f = $g.flag;
+    $g.debug = !$g.f("ignoreguidebug") && await $bridge.is_debug()
+    if (!$g.f("nodebug") && ($g.f("debug") || $g.debug)) {
         let ifr = document.createElement("iframe"); ifr.src = "./debug.html";
         document.body.appendChild(ifr); document.body.insertBefore(ifr, document.body.firstChild);
         ifr.addEventListener("load", function() {

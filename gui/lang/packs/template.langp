@@ -1,0 +1,35 @@
+# pack metadata
+_pack.id     = tpl
+_pack.name   = Template Pack
+_pack.credit = You
+
+
+# buttons
+bt.chdir          =  # text of the button that changes the currently selected directory
+ bt.chdir.dsc     =  # tooltip of the above button
+bt.search         =  # text of the button that adds mods in the selected directory
+ bt.search.dsc    =  # tooltip of the above button
+bt.fetchmeta      =  # text of the button that fetches all added mods' metadata
+ bt.fetchmeta.dsc =  # tooltip of the above button
+
+bt.new.dsc      =    # tooltip of the button that opens a new window
+bt.tutorial.dsc =    # tooltip of the button that shows the tutorial
+bt.reload.dsc   =    # tooltip of the button that reloads the window
+
+# inputs
+in.moddir.ph =       # the placeholder-text of the mod dir text input
+
+# messages
+mg.first       =     # the message shown when first starting the program
+mg.thanks      =     # thank-you message, shown after mg.first
+## tutorial
+mg.infotutor   =     # the first part of the tutorial
+mg.infotutor.2 =     # the second part of the tutorial
+mg.infotutor.3 =     # the third part of the tutorial
+## confirmation dialogues
+mg.confirm.rel =     # the text of the confirmation dialogue for reloading the window
+mg.confirm.chl =     # the text of the confirmation dialogue for changing the language
+
+# attribution
+attr      = Copyright (c) 2023 Shae VanCleave
+                     #^the text to attribute the program to me

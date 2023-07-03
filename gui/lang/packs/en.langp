@@ -1,3 +1,4 @@
+# pack metadata
 _pack.id     = en
 _pack.name   = English (Original)
 _pack.credit = Original English Language Pack By @shae1881
@@ -13,7 +14,8 @@ bt.search         = Find
 bt.fetchmeta      = Fetch
  bt.fetchmeta.dsc = Gets the upstream metadata for every mod in the list, including available versions, longer descriptions, and icons/images
 
-bt.tutorial.dsc = Read the tutorial again
+bt.new.dsc      = Open a new window
+bt.tutorial.dsc = Read the tutorial
 bt.reload.dsc   = Reload the page (application)
 
 # inputs
@@ -25,12 +27,17 @@ mg.thanks      = Thanks for trying out the program! As with any new software wri
                  on the lookout for things to improve, whether that be bugs to squash or features to add, please don't \ 
                  hesitate to make requests in the form of a Discord message to @shae1881 or a GitHub issue at the page \ 
                  github.com/Tiger-Tom/vintagestory-modmgr -- feedback makes the program better (hopefully)!
+## tutorial
 mg.infotutor   = Most of the time, you will want to start by setting your mod directory. When you start the program, there   \ 
                  should be a window asking you to set your mod directory, but you can always change that by pressing the     \ 
                  [bt.chdir; button. Then, you load the list of mods from that directory by pressing the [bt.search;  \ 
                  button. This should get you started with the bare minimum. In order to view expanded descriptions, updates, \ 
-                 and more, you should press the [bt.fetchmeta.txt; button.
+                 and more, you should press the [bt.fetchmeta; button.
 mg.infotutor.2 = All of the buttons should have a longer description if you need a refresher, just hover the mouse over them to view it
 mg.infotutor.3 = Press the [sy.bt.info_i; button to view this tutorial again
-
+## confirmation dialogues
 mg.confirm.rel = Are you sure you want to reload? Any unsaved changes will be lost
+mg.confirm.chl = Are you sure you want to change languages? (note: change may not fully take place before a reload)
+
+# misc
+attr      = Copyright (c) 2023 Shae VanCleave
