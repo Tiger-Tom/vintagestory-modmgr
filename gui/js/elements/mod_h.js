@@ -46,7 +46,7 @@ globalThis.$mod_h = {
             source: $f.default.source,
         }, str = fstring;
         let nf = { ...default_on_not_found, ...on_not_found, };
-        while (str.search(scan_patt) != -1)
+        while (str.search(scan_patt) !== -1)
             str = str.replaceAll(scan_patt, (m, k, o, s) => mod.hasOwnProperty(k)
                 ? (mod[k] === null) ? nf[k] : mod[k]
                 : ($error("formatting_mod", m, `Bad f-string element "${m}" in "${s}"`) || `%%${m}%%`));
