@@ -56,6 +56,23 @@ Object.assign(globalThis.$guapi, {
         /* dtype: one of "file", "save", or "folder" */
         return await $bridge.open_dialog(window_id, dtype, kwargs);
     },
+    // locks
+    lock: {
+        is_set: $bridge.lock_is_set,
+        obtain: function(id, wait=5) {
+            /* if wait is truthy, then we return a promise and check every {wait} seconds if the lock is available */
+            /* otherwise, returns a promise that contains a boolean of whether or not we obtained the lock */
+            if (!wait) return $bridge.lock_obtain(id);
+            return new Promise(resolve => {
+                async function check_for_obtain_lock() {
+                    if (await $bridge.lock_obtain(id)) resolve();
+                    else setTimeout(check_for_obtain_lock, wait*1000);
+                }
+                check_for_obtain_lock();
+            });
+        },
+        release: $bridge.lock_release,
+    },
 });
 
 // add submodules

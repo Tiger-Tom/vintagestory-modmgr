@@ -377,11 +377,11 @@ class GUAPI(GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base)
     dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
     def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
         return self.windows[wid].create_file_dialog(getattr(self.webview, self.dialog_types[dtype]), **kwargs)
-    print('not implemented in JS: lock')
-    def lock(self, name: str) -> bool:
+    def lock_obtain(self, name: str) -> bool:
         if name in self.locks: return False
         self.locks.add(name); return True
-    print('not implemented in JS: unlock')
-    def unlock(self, name: str) -> bool:
+    def lock_is_set(self, name: str) -> bool:
+        return name in self.locks
+    def lock_release(self, name: str) -> bool:
         if name not in self.locks: return False
         self.locks.remove(name); return True
