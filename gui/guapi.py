@@ -399,11 +399,12 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
 class GUAPI_Mods(GUAPI_BaseMagic):
     def mods_default_directory(self): return self.Mod.default_mod_directory()
     def mods_from_directory(self, path): return self._magic_iter(self.Mod.from_directory(path, hashable=True))
-    def mods_get_metadatas(self, mods: tuple[dict], callback_start: str, callback_done: str, nthreads=8):
-        self.magic[callback](m.id)
+    def mods_get_metadatas(self, mods: tuple[dict], callback_start: str | None = None, callback_done: str | None = None, nthreads=8):
+        donothing = lambda *_,**__: None
+        if callback_start is not None: self.magic[callback_start](m.id)
         return self.Mod.multiget_upstream_metadata((self.Mod(**modd) for modd in mods), nthreads=8,
-            callback_start=lambda m: self.magic[callback_start](m.id),
-            callback_done=lambda m: self.magic[callback_done](m.id))
+            callback_start=donothing if callback_start is None else lambda m: self.magic[callback_start](m.id),
+            callback_done=donothing if callback_done is None else lambda m: self.magic[callback_done](m.id))
     @classmethod
     def mods_compare_versions(_, v0: str, v1: str) -> int:
         v0, v1 = packaging.version.parse(v0), packaging.version.parse(v1)
