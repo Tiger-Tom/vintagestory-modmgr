@@ -410,7 +410,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         return tuple(self.magic.keys())
     def magic_reflect(self, id: str) -> dict[str, ...]:
         '''Get information about magic functions'''
-        try: return self[id].__reflection
+        try: return self.magic[id].__reflection
         except AttributeError: return {'type': None}
 
 class GUAPI_Mods(GUAPI_BaseMagic):
