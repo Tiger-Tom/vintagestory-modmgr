@@ -402,9 +402,6 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
     def magic_is_registered(self, id: str) -> bool:
         '''Returns whether or not the function is registered'''
         return id in self.magic
-    def magic_is_js(self, id: str) -> bool:
-        '''Returns whether or not the function is a magic Javascript function'''
-        return getattr(self.magic[id], '_is_magic_js', False)
     def magic_ls(self) -> tuple[str]:
         '''Get a tuple of every magic function ID'''
         return tuple(self.magic.keys())
