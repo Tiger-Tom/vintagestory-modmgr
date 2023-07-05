@@ -166,7 +166,7 @@ class GUAPI_BaseMagic(GUAPI_Base):
             for k,v in obj.items():
                 if not isinstance(v, str) or not v.startswith(f'{id}.') or (v not in self.magic): continue
                 del self.magic[v]; eprint(f'{id}.cleanup() on {k}: {v}')
-        cleanup.__reflection = {
+        cleanup._reflection__ = {
             'type': 'python', 'subtype': 'cleanup',
             'target': id,
         }
@@ -202,7 +202,7 @@ class GUAPI_BaseMagic(GUAPI_Base):
             if not hasattr(it, meth): continue
             k = f'{meth}()'; itero[k] = f'{idpfx}.{meth}'
             f = functools.partial(_magic_iter_fn, itero, getattr(it, meth))
-            f.__reflection = {
+            f._reflection__ = {
                 'type': 'python', 'subtype': f'iter.{meth}',
                 'parent': idpfx,
             }; self.magic[itero[k]] = f
@@ -217,7 +217,7 @@ class GUAPI_BaseMagic(GUAPI_Base):
             if not filtr(obj, n): continue
             k = f'{n}()'; objo[k] = f'{idpfx}.{n}'
             v = getattr(obj, n)
-            if inspect.isroutine(v): v.__reflection = {
+            if inspect.isroutine(v): v._reflection__ = {
                 'type': 'python', 'subtype': f'all.{n}',
                 'parent': idpfx,
             }; self.magic[objo[k]] = v
@@ -387,7 +387,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
                     self.store[store] = v; cb_func(v)
             return self.windows[wid].evaluate_js(code, cb)
         magicfn._is_magic_js = True
-        magicfn.__reflection = {
+        magicfn._reflection__ = {
             'type': 'js', 'code': js,
             'target_wid': target_id,
             'parameters': { 'argrepl': argrepl, 'strict_arguments': strict_arguments, },
@@ -410,7 +410,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         return tuple(self.magic.keys())
     def magic_reflect(self, id: str) -> dict[str, ...]:
         '''Get information about magic functions'''
-        try: return self.magic[id].__reflection
+        try: return self.magic[id]._reflection__
         except AttributeError: return {'type': None}
 
 class GUAPI_Mods(GUAPI_BaseMagic):
