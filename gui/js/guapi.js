@@ -25,6 +25,23 @@ Object.assign(globalThis.$guapi, {
     Window: null, W: null,
     Magic: null,  M: null,
     mods: null,   m: null,
+    lock: class {
+        constructor(id) { this.id = name; }
+        async is_set() { return await $bridge.lock_is_set(this.id); }
+        obtain(wait=5) {
+            /* if wait is truthy, then we return a promise and check every {wait} seconds if the lock is available */
+            /* otherwise, returns a promise that contains a boolean of whether or not we obtained the lock */
+            if (!wait) return $bridge.lock_obtain(this.id);
+            return new Promise(resolve => {
+                async function check_for_obtain_lock() {
+                    if (await $bridge.lock_obtain(id)) resolve();
+                    else setTimeout(check_for_obtain_lock, wait*1000);
+                }
+                check_for_obtain_lock();
+            });
+        },
+        release: $bridge.lock_release,
+    },
     /* submodule initialization */
     _add: function(longname, shortname, module) {
         let _catch = promise => e => $error(
@@ -55,23 +72,6 @@ Object.assign(globalThis.$guapi, {
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
         /* dtype: one of "file", "save", or "folder" */
         return await $bridge.open_dialog(window_id, dtype, kwargs);
-    },
-    // locks
-    lock: {
-        is_set: $bridge.lock_is_set,
-        obtain: function(id, wait=5) {
-            /* if wait is truthy, then we return a promise and check every {wait} seconds if the lock is available */
-            /* otherwise, returns a promise that contains a boolean of whether or not we obtained the lock */
-            if (!wait) return $bridge.lock_obtain(id);
-            return new Promise(resolve => {
-                async function check_for_obtain_lock() {
-                    if (await $bridge.lock_obtain(id)) resolve();
-                    else setTimeout(check_for_obtain_lock, wait*1000);
-                }
-                check_for_obtain_lock();
-            });
-        },
-        release: $bridge.lock_release,
     },
 });
 
