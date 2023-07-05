@@ -77,6 +77,13 @@ def Locked(supclass, methods: tuple[str] | type | None = None):
     return _Locked
 LockedDict = Locked(dict, collections.abc.MutableMapping)
 LockedSet = Locked(set, collections.abc.MutableSet)
+# Dictionary With Custom "KeyError"
+def CustomErrorDict(err: Exception, supcls=dict):
+    class _CustomErrorDict(supcls):
+        __slots__ = ()
+        def __getitem__(self, key):
+            if key not in self: raise err
+    return _CustomErrorDict
 #</Misc. Base Classes
 
 #> Exceptions
@@ -112,21 +119,15 @@ class GUAPI_Base(GUAPI_Layout):
 
 class GUAPI_BaseVariables(GUAPI_Base):
     __slots__ = ()
-    def _vars_Store(LockedDict):
-        def __setitem__(self, key, val):
-            return super().__setitem__(key)
-        def __getitem__(self, key):
-            if key not in self: raise VariableNotFound(f'Variable {key} does not exist')
-            return super().__getitem__(key)
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs); self.store = self._vars_Store()
+        super().__init__(*args, **kwargs)
+        self.store = CustomErrorDict(VariableNotFound, LockedDict)
 
-class GUAPI_BaseWindows(GUAPI_BaseVariables):
+class GUAPI_BaseWindows(GUAPI_Base):
     __slots__ = ()
-    class _win_Windows(LockedDict):
-        def __getitem__(self, key):
-            if key not in self: raise WindowNotFound(f'Window {key} does not exist')
-            return super().__getitem__(key)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.windows = CustomErrorDict(WindowNotFound, LockedDict)
     def _win_extract_data(self, w: 'webview.Window'):
         return {
             'title': w.title,
@@ -149,18 +150,12 @@ class GUAPI_BaseWindows(GUAPI_BaseVariables):
         id = f'{baseid}%d'; add = 0
         while (id % add) in self.windows: add += 1
         return id % add
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs); self.windows = self._win_Windows()
 
-class GUAPI_BaseMagic(GUAPI_BaseVariables):
+class GUAPI_BaseMagic(GUAPI_Base):
     __slots__ = ()
-    class _magic_Magic(LockedDict):
-        def __getitem__(self, key):
-            if key not in self: raise MagicNotFound(f'Magic method {key} does not exist')
-            return super().__getitem__(key)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.magic = self._magic_Magic() #; self.magic_claimed = set()
+        self.magic = CustomErrorDict(MagicNotFound, LockedDict) #; self.magic_claimed = set()
     def _magic_cleanup(self, obj: dict, id: str):
         def cleanup():
             for k,v in obj.items():
