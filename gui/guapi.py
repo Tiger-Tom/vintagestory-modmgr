@@ -161,6 +161,10 @@ class GUAPI_BaseMagic(GUAPI_Base):
             for k,v in obj.items():
                 if not isinstance(v, str) or not v.startswith(f'{id}.') or (v not in self.magic): continue
                 del self.magic[v]; eprint(f'{id}.cleanup() on {k}: {v}')
+        cleanup.__reflection = {
+            'type': 'python', 'subtype': 'cleanup',
+            'target': id,
+        }
         obj['cleanup()'] = f'{id}.cleanup'; self.magic[obj['cleanup()']] = cleanup
     def _magic_idpfx(self, pfx: str, obj: str | object): # absolutely prevent name collisions* (*maybe) in a small(ish) amount of space
         # magic_claimed code removed, testing shows that checking if item in dict.keys is barely slower than in set
