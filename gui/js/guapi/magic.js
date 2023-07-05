@@ -13,41 +13,6 @@ const MagicMethod = class extends (async()=>{}).constructor {
            returns the result (as much as it can be JSON serialized), but without resolving promises */
         return new MagicMethod(await $bridge.magic_register_js(target_window.toString(), js, store, callback, argrepl, strict_arguments));
     }
-    static convert_object(obj) {
-        /* converts any of the objects keys that end with () into magic methods */
-        let o = {...obj};
-        for (let k in o)
-            if ((typeof(k) === "string") && (typeof(o[k]) === "string"))
-                if (k.endsWith("()")) o[k.slice(0, -2)] = new MagicMethod(o[k]);
-        return o;
-    }
-    static convert_object_to_iterable(obj, track_vals=false, relaxed_send=true) {
-        let o = MagicMethod.convert_object(obj);
-        o._is_consumed = false;
-        o[Symbol.asyncIterator] = function() {
-            let hass = typeof o.send === "function";
-            if (!((typeof o.__next__ === "function") || hass))
-                throw "Supposed \"iterator\" object has neither a __next__ nor a send function!";
-            let tracked = track_vals ? [] : undefined;
-            let body = `
-                if (o._is_consumed) return true;
-                try {
-                    let v = await o.${hass ? "send(nval)" : "__next__()"};
-                    ${track_vals ? "tracked.push(v);" : ""}
-                    return {value: v, done: false};
-                }
-                catch (e) {
-                    if (e.name === "StopIteration" || e.name === "MagicNotFound") {
-                        o._is_consumed = true;
-                        return {value: tracked, done: true};
-                    }
-                    throw e;
-                }`, af = async function(){}.constructor;
-            return {
-                next: hass ? af(`nval=${relaxed_send ? "null" : "undefined"}`, body) : af(body),
-            };
-        }; return o;
-    }
     async unregister(fail_if_not_exists=true) {
         /* unregisters this magic method in the backend */
         return await $bridge.magic_unregister(this.id, fail_if_not_exists);
@@ -69,6 +34,49 @@ const MagicMethod = class extends (async()=>{}).constructor {
         if ((this.__reflection === undefined) || refresh)
             this.__reflection = await $bridge.magic_reflect(this.id);
         return this.__reflection;
+    }
+    
+    static convert_object(obj, auto_iter=true) {
+        /* converts any of the objects keys that end with () into magic methods */
+        let o = {...obj};
+        for (let k in o)
+            if ((typeof(k) === "string") && (typeof(o[k]) === "string"))
+                if (k.endsWith("()")) o[k.slice(0, -2)] = new MagicMethod(o[k]);
+        return o;
+    }
+    static ITER_NEXT = 1;
+    static ITER_SEND = 3;
+    static object_can_be_iterable(obj) {
+        /* 0 if object cannot be an iterable, ITER_NEXT if it can __next__, ITER_SEND if in can send, ITER_NEXT|ITER_SEND if both */
+        let val = (o.__next__ instanceof Function) ? ITER_NEXT : 0;
+        if (o.send instanceof Function) val += ITER_SEND;
+        return val;
+    }
+    static convert_object_to_iterable(obj, track_vals=false, relaxed_send=true) {
+        let o = MagicMethod.convert_object(obj), can = object_can_be_iterable(o);
+        o._is_consumed = false;
+        o[Symbol.asyncIterator] = function() {
+            if (!can)
+                throw "Supposed \"iterator\" object has neither a __next__ nor a send function!";
+            let tracked = track_vals ? [] : undefined;
+            let body = `
+                if (o._is_consumed) return true;
+                try {
+                    let v = await o.${(can&ITER_SEND) ? "send(nval)" : "__next__()"};
+                    ${track_vals ? "tracked.push(v);" : ""}
+                    return {value: v, done: false};
+                }
+                catch (e) {
+                    if (e.name === "StopIteration" || e.name === "MagicNotFound") {
+                        o._is_consumed = true;
+                        return {value: tracked, done: true};
+                    }
+                    throw e;
+                }`, af = async function(){}.constructor;
+            return {
+                next: (can&ITER_SEND) ? af(`nval=${relaxed_send ? "null" : "undefined"}`, body) : af(body),
+            };
+        }; return o;
     }
 };
 export default MagicMethod;
