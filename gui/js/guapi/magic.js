@@ -44,16 +44,21 @@ const MagicMethod = class extends (async()=>{}).constructor {
                 if (k.endsWith("()")) o[k.slice(0, -2)] = new MagicMethod(o[k]);
         return o;
     }
-    static ITER_NEXT = 0b01;
-    static ITER_SEND = 0b10;
+    static ITER_NEXT = 0b001;
+    static ITER_SEND = 0b010;
+    static ITER_ITER = 0b100;
     static object_can_be_iterable(obj) {
-        /* 0 if object cannot be an iterable, ITER_NEXT if it can __next__, ITER_SEND if in can send, ITER_NEXT|ITER_SEND if both */
-        let val = (o.__next__ instanceof Function) ? ITER_NEXT : 0;
-        if (o.send instanceof Function) val += ITER_SEND;
+        /* Returns 0...
+            +ITER_NEXT if it can __next__
+            +ITER_SEND if in can send,
+            +ITER_ITER if it already has Symbol.asyncIterator */
+        let val = (obj.__next__ instanceof Function) ? MagicMethod.ITER_NEXT : 0;
+        if (obj.send instanceof Function) val += MagicMethod.ITER_SEND;
+        if (obj[Symbol.asyncIterator]) val += MagicMethod.ITER_ITER;
         return val;
     }
     static convert_object_to_iterable(obj, track_vals=false, relaxed_send=true) {
-        let o = MagicMethod.convert_object(obj), can = object_can_be_iterable(o);
+        let o = MagicMethod.convert_object(obj), can = MagicMethod.object_can_be_iterable(o);
         o._is_consumed = false;
         o[Symbol.asyncIterator] = function() {
             if (!can)
@@ -62,7 +67,7 @@ const MagicMethod = class extends (async()=>{}).constructor {
             let body = `
                 if (o._is_consumed) return true;
                 try {
-                    let v = await o.${(can&ITER_SEND) ? "send(nval)" : "__next__()"};
+                    let v = await o.${(can & MagicMethod.ITER_SEND) ? "send(nval)" : "__next__()"};
                     ${track_vals ? "tracked.push(v);" : ""}
                     return {value: v, done: false};
                 }
@@ -74,7 +79,7 @@ const MagicMethod = class extends (async()=>{}).constructor {
                     throw e;
                 }`, af = async function(){}.constructor;
             return {
-                next: (can&ITER_SEND) ? af(`nval=${relaxed_send ? "null" : "undefined"}`, body) : af(body),
+                next: (can & MagicMethod.ITER_SEND) ? af(`nval=${relaxed_send ? "null" : "undefined"}`, body) : af(body),
             };
         }; return o;
     }
