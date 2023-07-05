@@ -58,11 +58,17 @@ const MagicMethod = class extends (async()=>{}).constructor {
     }
     async is_javascript() {
         /* returns whether or not the magic method is a Javascript method */
-        return await $bridge.magic_is_js(this.id);
+        return (await this.reflect()).type === "js";
     }
     static async list_all() {
         /* returns a list of every magic function ID */
         return await $bridge.magic_ls();
+    }
+    async reflect(refresh=false) {
+        /* returns information about the magic function, caching it to be used again */
+        if ((this.__reflection === undefined) || refresh)
+            this.__reflection = await $bridge.magic_reflect(this.id);
+        return this.__reflection;
     }
 };
 export default MagicMethod;

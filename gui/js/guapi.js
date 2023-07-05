@@ -39,8 +39,8 @@ Object.assign(globalThis.$guapi, {
                 }
                 check_for_obtain_lock();
             });
-        },
-        release: $bridge.lock_release,
+        }
+        async release() { return await $bridge.lock_release(this.id); }
     },
     /* submodule initialization */
     _add: function(longname, shortname, module) {
