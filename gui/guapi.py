@@ -35,7 +35,7 @@ def hook_factory(basehook: type):
         def pre_webview_start(self, wv: 'webview'):
             self.guapi.webview = wv
             return super().pre_webview_start(wv) | {
-                'private_mode': False,
+                'private_mode': False, # save cookies, localstorage, cache
             }
     return Hook
 #</Hooks
