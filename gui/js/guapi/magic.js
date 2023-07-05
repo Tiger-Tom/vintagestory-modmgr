@@ -44,8 +44,8 @@ const MagicMethod = class extends (async()=>{}).constructor {
                 if (k.endsWith("()")) o[k.slice(0, -2)] = new MagicMethod(o[k]);
         return o;
     }
-    static ITER_NEXT = 1;
-    static ITER_SEND = 3;
+    static ITER_NEXT = 0b01;
+    static ITER_SEND = 0b10;
     static object_can_be_iterable(obj) {
         /* 0 if object cannot be an iterable, ITER_NEXT if it can __next__, ITER_SEND if in can send, ITER_NEXT|ITER_SEND if both */
         let val = (o.__next__ instanceof Function) ? ITER_NEXT : 0;
