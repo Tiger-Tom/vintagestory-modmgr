@@ -196,7 +196,11 @@ class GUAPI_BaseMagic(GUAPI_Base):
         for meth in ('__next__', 'send'):
             if not hasattr(it, meth): continue
             k = f'{meth}()'; itero[k] = f'{idpfx}.{meth}'
-            self.magic[itero[k]] = functools.partial(_magic_iter_fn, itero, getattr(it, meth))
+            f = functools.partial(_magic_iter_fn, itero, getattr(it, meth))
+            f.__reflection = {
+                'type': 'python', 'subtype': f'iter.{meth}',
+                'parent': idpfx,
+            }; self.magic[itero[k]] = f
         for n,vs in {'len': ('__length_hint__', '__len__')}.items():
             for v in vs:
                 if not hasattr(it, v): continue
@@ -207,7 +211,11 @@ class GUAPI_BaseMagic(GUAPI_Base):
         for n in dir(obj):
             if not filtr(obj, n): continue
             k = f'{n}()'; objo[k] = f'{idpfx}.{n}'
-            self.magic[objo[k]] = getattr(obj, n)
+            v = getattr(obj, n)
+            if inspect.isroutine(v): v.__reflection = {
+                'type': 'python', 'subtype': f'all.{n}',
+                'parent': idpfx,
+            }; self.magic[objo[k]] = v
         self._magic_cleanup(objo, idpfx); return objo
 #</Bases
 
