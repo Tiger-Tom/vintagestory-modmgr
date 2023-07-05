@@ -370,6 +370,12 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
                     self.store[store] = v; cb_func(v)
             return self.windows[wid].evaluate_js(code, cb)
         magicfn._is_magic_js = True
+        magicfn.__reflection = {
+            'type': 'js', 'code': js,
+            'target_wid': target_id,
+            'parameters': { 'argrepl': argrepl, 'strict_arguments': strict_arguments, },
+            'result': { 'store': store, 'callback': callback, },
+        }
         self.magic[mid] = magicfn; return mid
     def magic_unregister(self, id: str, fail_if_not_exists = True) -> bool:
         '''Deletes the magic function with the given ID, throwing MagicNotFound if the function doesn't exist and fail_if_not_exists is truthy. Returns whether or not anything was deleted'''
@@ -385,6 +391,10 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
     def magic_ls(self) -> tuple[str]:
         '''Get a tuple of every magic function ID'''
         return tuple(self.magic.keys())
+    def magic_reflect(self, id: str) -> dict[str, ...]:
+        '''Get information about magic functions'''
+        try: return self[id].__reflection
+        except AttributeError: return {'type': None}
 
 class GUAPI_Mods(GUAPI_BaseMagic):
     def mods_default_directory(self): return self.Mod.default_mod_directory()
