@@ -121,13 +121,13 @@ class GUAPI_BaseVariables(GUAPI_Base):
     __slots__ = ()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.store = CustomErrorDict(VariableNotFound, LockedDict)
+        self.store = CustomErrorDict(VariableNotFound, LockedDict)()
 
 class GUAPI_BaseWindows(GUAPI_Base):
     __slots__ = ()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.windows = CustomErrorDict(WindowNotFound, LockedDict)
+        self.windows = CustomErrorDict(WindowNotFound, LockedDict)()
     def _win_extract_data(self, w: 'webview.Window'):
         return {
             'title': w.title,
@@ -155,7 +155,7 @@ class GUAPI_BaseMagic(GUAPI_Base):
     __slots__ = ()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.magic = CustomErrorDict(MagicNotFound, LockedDict) #; self.magic_claimed = set()
+        self.magic = CustomErrorDict(MagicNotFound, LockedDict)() #; self.magic_claimed = set()
     def _magic_cleanup(self, obj: dict, id: str):
         def cleanup():
             for k,v in obj.items():
