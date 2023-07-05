@@ -56,7 +56,6 @@ def Locked(supclass, methods: tuple[str] | type | None = None):
         If methods is a non-abstract class, then methods are obtained from the class with inspect.getmembers and predicate inspect.isfunction
         Otherwise, methods are used as-is
     '''
-    epl = lambda *a, **kw: eprint(f'Generating locked class Locked<{supclass.__name__}>:', *a, **kw)
     method_names = lambda c: tuple(n for n,m in inspect.getmembers(c, predicate=inspect.isfunction))
     if inspect.isclass(methods):
         if inspect.isabstract: methods = tuple(methods.__abstractmethods__)
@@ -65,15 +64,20 @@ def Locked(supclass, methods: tuple[str] | type | None = None):
     class _Locked(supclass):
         __slots__ = ('__lock',)+tuple(methods)
         def __init__(self, *a, _lock=None, **kw):
+            #for m in methods: setattr(self, m, self.__lock_method(getattr(super(), m)))
             super().__init__(*a, **kw)
             self.__lock = _lock if (_lock is not None) else threading.RLock()
-            for m in methods: setattr(self, m, self.__lock_method(getattr(super(), m)))
-        def __lock_method(self, meth):
-            def locked_meth(*a, **kw):
-                eprint(f'Locked<{supclass.__name__}>@{id(self)}.{meth.__name__}(*{a}, **{kw})')
+        @staticmethod
+        def _lock_meth(meth):
+            def _locked_meth(self, *a, **kw):
+                eprint(f'Locked<{supclass.__name__}>@{id(self)}.{meth.__name__}(...)')
                 with self.__lock:
-                    return meth(*a, **kw)
-            return locked_meth
+                    return meth(self, *a, **kw)
+            return _locked_meth
+    for m in methods:
+        setattr(_Locked, m,
+            object.__getattribute__(_Locked, '_lock_meth')(
+                object.__getattribute__(supclass, m)))
     return _Locked
 LockedDict = Locked(dict, collections.abc.MutableMapping)
 LockedSet = Locked(set, collections.abc.MutableSet)
@@ -83,6 +87,7 @@ def CustomErrorDict(err: Exception, supcls=dict):
         __slots__ = ()
         def __getitem__(self, key):
             if key not in self: raise err
+            return super().__getitem__(key)
     return _CustomErrorDict
 #</Misc. Base Classes
 
