@@ -1,13 +1,15 @@
 # Graphical User / Application Protocol Interface
 
 #> Imports
-import os, sys   # basic system libraries
-import inspect   # introspection
-import uuid      # generate unique identifiers
-import functools # partials
-import json      # Python <> JS bridge
-import typing    # typehints
-import packaging # version comparison
+import os, sys         # basic system libraries
+import inspect         # introspection
+import uuid            # generate unique identifiers
+import functools       # partials
+import json            # Python <> JS bridge
+import typing          # typehints
+import packaging       # version comparison
+import threading       # resource locking
+import collections.abc # ABC for locking classes
 #</Imports
 
 #> Hooks
@@ -44,6 +46,39 @@ try: eprint(end='')
 except: eprint = lambda *a, **kw: None
 #</Eprint
 
+#> Misc. Base Classes
+# Locked classes
+def Locked(supclass, methods: tuple[str] | type | None = None):
+    '''Locks multiple methods of a class with threading.RLock
+
+        If methods is None (the default), then methods are obtained from supclass with inspect.getmembers and predicate inspect.isfunction
+        If methods is an abstract class, then methods are obtained from members.__abstractmethods__
+        If methods is a non-abstract class, then methods are obtained from the class with inspect.getmembers and predicate inspect.isfunction
+        Otherwise, methods are used as-is
+    '''
+    epl = lambda *a, **kw: eprint(f'Generating locked class Locked<{supclass.__name__}>:', *a, **kw)
+    method_names = lambda c: tuple(n for n,m in inspect.getmembers(c, predicate=inspect.isfunction))
+    if inspect.isclass(methods):
+        if inspect.isabstract: methods = tuple(methods.__abstractmethods__)
+        else: methods = method_names(methods)
+    elif methods is None: methods = method_names(supclass)
+    class _Locked(supclass):
+        __slots__ = ('__lock',)+tuple(methods)
+        def __init__(self, *a, _lock=None, **kw):
+            super().__init__(*a, **kw)
+            self.__lock = _lock if (_lock is not None) else threading.RLock()
+            for m in methods: setattr(self, m, self.__lock_method(getattr(super(), m)))
+        def __lock_method(self, meth):
+            def locked_meth(*a, **kw):
+                eprint(f'Locked<{supclass.__name__}>@{id(self)}.{meth.__name__}(*{a}, **{kw})')
+                with self.__lock:
+                    return meth(*a, **kw)
+            return locked_meth
+    return _Locked
+LockedDict = Locked(dict, collections.abc.MutableMapping)
+LockedSet = Locked(set, collections.abc.MutableSet)
+#</Misc. Base Classes
+
 #> Exceptions
 class VariableNotFound(KeyError): pass
 class WindowNotFound(KeyError): pass
@@ -61,6 +96,7 @@ class GUAPI_Layout:
 class GUAPI_Base(GUAPI_Layout):
     __slots__ = ()
     def __init__(self, *, mod: 'Mod', hooks: 'Hook', debug: bool, flags: tuple[str]):
+        super().__init__()
         self.Mod = mod; self.webview = None
         self.hooks = hooks; self.debug = debug; self.flags = flags
     # Introspection
@@ -76,7 +112,9 @@ class GUAPI_Base(GUAPI_Layout):
 
 class GUAPI_BaseVariables(GUAPI_Base):
     __slots__ = ()
-    def _vars_Store(dict):
+    def _vars_Store(LockedDict):
+        def __setitem__(self, key, val):
+            return super().__setitem__(key)
         def __getitem__(self, key):
             if key not in self: raise VariableNotFound(f'Variable {key} does not exist')
             return super().__getitem__(key)
@@ -85,7 +123,7 @@ class GUAPI_BaseVariables(GUAPI_Base):
 
 class GUAPI_BaseWindows(GUAPI_BaseVariables):
     __slots__ = ()
-    class _win_Windows(dict):
+    class _win_Windows(LockedDict):
         def __getitem__(self, key):
             if key not in self: raise WindowNotFound(f'Window {key} does not exist')
             return super().__getitem__(key)
@@ -116,7 +154,7 @@ class GUAPI_BaseWindows(GUAPI_BaseVariables):
 
 class GUAPI_BaseMagic(GUAPI_BaseVariables):
     __slots__ = ()
-    class _magic_Magic(dict):
+    class _magic_Magic(LockedDict):
         def __getitem__(self, key):
             if key not in self: raise MagicNotFound(f'Magic method {key} does not exist')
             return super().__getitem__(key)
@@ -372,7 +410,7 @@ class GUAPI(GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base)
     __slots__ = ('locks',)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.locks = set()
+        self.locks = LockedSet()
     # Directory / file manipulation
     dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
     def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
