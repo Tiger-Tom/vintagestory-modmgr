@@ -138,13 +138,13 @@ $lang.apply = async function(elem=document.body) {
         elem[field] = n; elem.classList.add($lang.mutated_class);
     }
     let p = Promise.all(Array.from(elem.children || []).map($lang.apply));
-    for (let r = 0; r < ($lc("passes") || 1); r++) {console.log(r);
-        $lang.fields_lenient.forEach(f => mutate_field(elem, f));}
+    for (let r = 0; r < ($lc("passes") || 1); r++)
+        $lang.fields_lenient.forEach(f => mutate_field(elem, f));
     if (elem.children.length) {
         await p; return;
     }
-    for (let r = 0; r < ($lc("passes") || 1); r++){console.info(r);
-        $lang.fields_strict.forEach(f => mutate_field(elem, f));}
+    for (let r = 0; r < ($lc("passes") || 1); r++)
+        $lang.fields_strict.forEach(f => mutate_field(elem, f));
     await p;
 };
 $lang.strip = async function(elem=document.body, recurse=true) {
