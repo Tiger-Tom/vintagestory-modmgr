@@ -10,6 +10,7 @@ globalThis.$lang = {
     pack_id: /^[^\S\n]*_pack\.id[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
     pack_name: /^[^\S\n]*_pack\.name[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
     pack_cred: /^[^\S\n]*_pack\.credit[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
+    pack_base: /^[^\S\n]*_pack\.base[^\S\n]*=[^\S\n]*(.*?)[^\S\n]*$/m,
     /* modified fields */
     fields_lenient: [ // element can have children (feels kind of wrong to write)
         "alt", "cite", "label", "placeholder", "title", ],
@@ -113,13 +114,23 @@ $lang.loadpacks = async function(packs) {
             id: id, data: t,
             name: t.match($lang.pack_name)[1],
             credits: t.match($lang.pack_cred)[1],
+            base: t.match($lang.pack_base)?.[1],
         };
     }));
     Object.assign($lang.packs, ploaded);
 };
-$lang.select_pack = async function(id) {
-    await $lang.load($lang.packs[id].data, false, true, true);
-    await $lang.strip(); await $lang.applyALL();
+$lang.select_pack = async function(id, apply_all=true, stack=[], stack_max=8) {
+    stack.push(id);
+    let pack = $lang.packs[id];
+    if (pack.base)
+        if (stack.length > stack_max)
+            $error("lang_pack", `${stack.join(".")}:overflow`, `The pack-stack overflowed (> ${stack_max}), cannot safely add additional bases (pack-stack: ${stack.join(".")})`);
+        else if ($lang.packs[pack.base] === undefined)
+            $error("lang_pack", `${stack.join(".")}.${pack.base}:notfound`, `Failed to load base lang pack ${pack.base} for pack-stack ${stack.join(".")} as it does not exist`);
+        else $lang.select_pack(pack.base, false, stack);
+    await $lang.load(pack.data, false, true, true);
+    await $lang.strip();
+    if (apply_all) await $lang.applyALL();
 };
 // applying languages to elements
 $lang.applyALL = async function() {

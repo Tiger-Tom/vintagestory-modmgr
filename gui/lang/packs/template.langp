@@ -2,6 +2,9 @@
 _pack.id     = tpl
 _pack.name   = Template Pack
 _pack.credit = You
+_pack.base   = en    # ID of the pack to load "under" this pack, (potentially) providing missing translations
+                     # this pack can also have a base that will load before/"under" it
+                     # this key is optional
 
 # allow nesting
 _config.passes = 2
@@ -35,4 +38,4 @@ mg.confirm.chl =     # the text of the confirmation dialogue for changing the la
 # attribution
 attr     = Copyright (c) 2023 Shae VanCleave
                      #^the text to attribute the program to me
-attr.dsc = [attr; Under the MIT License
+attr.dsc = [attr;, Under the MIT License
