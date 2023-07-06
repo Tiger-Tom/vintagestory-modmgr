@@ -3,6 +3,8 @@ _pack.id     = tpl
 _pack.name   = Template Pack
 _pack.credit = You
 
+# allow nesting
+_config.passes = 2
 
 # buttons
 bt.chdir          =  # text of the button that changes the currently selected directory
@@ -31,5 +33,6 @@ mg.confirm.rel =     # the text of the confirmation dialogue for reloading the w
 mg.confirm.chl =     # the text of the confirmation dialogue for changing the language
 
 # attribution
-attr      = Copyright (c) 2023 Shae VanCleave
+attr     = Copyright (c) 2023 Shae VanCleave
                      #^the text to attribute the program to me
+attr.dsc = [attr; Under the MIT License
