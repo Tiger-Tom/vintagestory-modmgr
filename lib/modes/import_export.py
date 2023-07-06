@@ -13,7 +13,7 @@ eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 # Import
 def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('-i', '--interactive', action='store_true', help='Ask before downloading each mod (somewhat unneeded with --auto-ask)')
-    p.add_argument('-t', '--threads', default=0, metavar='threads', type=int, help='How many threads to use for querying mod information and downloading mods (default: 0, which means infinite)')
+    p.add_argument('-t', '--threads', default=8, metavar='threads', type=int, help='How many threads to use for querying mod information and downloading mods (0 means infinite) (default: 8)')
     p.add_argument('-e', '--exclude', metavar='modid', default=[], action='append', help='Add a mod ID to not be imported (can be used multiple times)')
     p.add_argument('--release', default='auto', choices=('auto', 'auto_ask', 'latest', 'ask'), help='Which release of the mod to install. "auto" (the default) and "auto_ask" check if it\'s specified in the file, or gets the latest if it isn\'t for "auto" and asks for "auto_ask", "ask" and "latest" are self-explanatory')
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')

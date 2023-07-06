@@ -11,7 +11,7 @@ eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 
 def add_arguments(p: argparse.ArgumentParser):
     p.add_argument('-u', '--unattended', action='store_true', help='Don\'t ask for user input before selecting mod candidates or removing files')
-    p.add_argument('-t', '--threads', default=0, metavar='threads', type=int, help='How many threads to use for querying mod information and downloading mods (default: 0, which means infinite)')
+    p.add_argument('-t', '--threads', default=8, metavar='threads', type=int, help='How many threads to use for querying mod information and downloading mods (0 is infinite) (default: 8)')
     p.add_argument('-e', '--error-behavior', metavar='mode', choices=('ask', 'ignore', 'fail'), default='ask', help='How to behave when an error is encountered (default: "ask")')
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
