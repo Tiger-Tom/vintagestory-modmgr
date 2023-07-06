@@ -1,4 +1,4 @@
-globalThis.$error = function(where, code, msg, attach_stack_if_present=true) {
+globalThis.$error = function(where, code, msg) {
     console.debug(`$error on ("${where}", "${code}", "${msg}")`);
     let m = $error._formatmsg(where, code, msg);
     for (let b of $error.config[where].split("+"))
