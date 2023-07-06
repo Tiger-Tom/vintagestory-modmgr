@@ -18,12 +18,13 @@ $error._behavior_handlers = {
 };
 
 $error.config = {
-    "global_event": "annoy_user+log_error",
-    "language": "annoy_user+log_error",
+    "global_event":      "annoy_user+log_error",
+    "language":          "annoy_user+log_warn",
+    "lang_pack":         "annoy_user+log_warn",
     "load_guapi_module": "annoy_user+log_error",
-    "formatting_mod": "log_warn",
-    "import": "annoy_user+log_error",
-    "pywebview": "annoy_user+log_error",
+    "formatting_mod":    "log_warn",
+    "import":            "annoy_user+log_error",
+    "pywebview":         "annoy_user+log_error",
 };
 
 globalThis.addEventListener("error", function(e) {
