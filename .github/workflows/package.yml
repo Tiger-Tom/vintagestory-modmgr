@@ -22,7 +22,7 @@ jobs:
                 path: __main__.py
                 contents: import main;main.main()
           - name: Add Files to Zips
-            run: zip -r -0 vintagestory-modmgr.pyz.zip __main__.py main.py basemod.py modes/ gui/ LICENSE
+            run: zip -r -0 vintagestory-modmgr.pyz.zip __main__.py main.py gui/ lib/ LICENCE
           - name: Convert Zip to PYZs
             run: python3 -m zipapp -p /usr/bin/python3 vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz
           - name: Test Application
