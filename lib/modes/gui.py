@@ -115,6 +115,7 @@ def add_arguments(p: argparse.ArgumentParser):
     p.add_argument('--guapi', '--api', default=None, help='The Python module of the API to provide to the GUI (GU/API) (defaults to modes/guapi.py). Additionally, this file provides hooks that can modify the way the program behaves in various ways')
     p.add_argument('--no-inline', action='store_true', help='Don\'t speed up loading times by inlining certain parts of the main HTML page')
     p.add_argument('--no-minify', action='store_true', help='Don\'t minify during inlining (has no affect when used with --no-inline) (most minifying requires the css-html-js-minify package)')
+    p.add_argument('--backend', choices=('cef', 'qt', 'gtk'), default=None, help='The backend to use for rendering (one of "cef", "qt", "gtk") (default depends on webview)')
     p.add_argument('flags', nargs='*', help='Flags to pass to the webapp through the GU/API')
     #p.add_argument('initial_dir', metavar='path', nargs='?', default=None, help='The directory to start in (optional)')
 def command(ns: argparse.Namespace):
@@ -164,7 +165,7 @@ def command(ns: argparse.Namespace):
         ga = gpi.GUAPI(**({'mod': Mod, 'debug': ns.debug} | hook.pre_api_create())); hook.post_api_create(ga)
         splash('Creating window')
         hook.post_window_created(webview.create_window(**({'url': gui_dir, 'js_api': ga} | hook.pre_window_created())))
-        webview.start(**{'func': hook.as_webview_start, 'debug': ns.debug, 'http_server': (ns.http_server is not None), 'http_port': ns.http_server} | hook.pre_webview_start(webview))
+        webview.start(**{'func': hook.as_webview_start, 'debug': ns.debug, 'http_server': (ns.http_server is not None), 'http_port': ns.http_server, 'gui': ns.backend} | hook.pre_webview_start(webview))
         hook.post_webview_start(webview)
     except Exception as e: hook.uncaught_exception(e)
     if not ns.no_inline:
