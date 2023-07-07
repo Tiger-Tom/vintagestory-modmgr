@@ -22,7 +22,7 @@ def fetch(src, *, as_bytes=False, headers={'accept-encoding': 'gzip'}) -> str | 
 
 class Tag:
     __slots__ = ('_tag', '_attrs', '_type', 'innerHTML')
-    _valueless_attr= object()
+    _valueless_attr = object()
     def __init__(self, tag, *, inner='', attrs=(), type='open'):
         assert type in {'open', 'self_closing', 'declaration'}
         self._tag = tag; self._type = type

@@ -13,7 +13,6 @@ lead_trail_whitespace = re.compile(r'(^\s+)|(\s+$)', re.MULTILINE)
 c_style_comments = re.compile(r'/\*.*?\*/', re.DOTALL)
 css_class_defn = re.compile(r'^\w*?\.[^}]+}', re.MULTILINE)
 css_id_defn = re.compile(r'^#[^}]+}', re.MULTILINE)
-html_comments = re.compile(r'<!--.*?-->', re.DOTALL)
 try:
     from jsmin import jsmin
     def js_minify(js):
@@ -22,13 +21,23 @@ try:
 except ModuleNotFoundError: js_minify = lambda x: x
 def html_minify(html):
     eprint('<HTML minified>')
-    return lead_trail_whitespace.sub('', html_comments.sub('', html))
+    return lead_trail_whitespace.sub('', html)
 def css_minify(css, strip=False):
     eprint(f'<CSS minified; {strip=}>')
     css = lead_trail_whitespace.sub('', c_style_comments.sub('', css))
     if strip: css = css_id_defn.sub('', css_class_defn.sub('', css))
     return newlines.sub('', css)
 #</Minifier
+
+#> Inliner "flags"
+# HTML comment flags
+flag_remove = re.compile(r'^(.*?)<!--inline:remove-->(.*?)$', re.MULTILINE)
+# Script attr flags
+flag_no_inline = re.compile('noinline')
+# CSS attr flags
+flag_inline_strip = 'inline-strip'
+flag_inline_urls = 'inline-urls'
+#</Inliner "flags"
 
 #> Header
 eprint = lambda *a,**k: print('[Inliner]:', *a, file=sys.stderr, **k)
@@ -50,9 +59,6 @@ def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> st
 
 class Inliner:
     __slots__ = ('base', 'url_base', 'minify')
-    # flags
-    no_inline = re.compile('noinline')
-    # not flags
     pbase_attr = '=["\']([^"\']+)["\']'
     def __init__(self, base, minify):
         self.base = base; self.minify = minify
@@ -63,7 +69,7 @@ class Inliner:
         print(self.url_base or self.base)
         return fetch(src, self.url_base or self.base, **kw)
     def _script_tag_sub(self, m):
-        if self.no_inline.search(m.group(1)): return m.group(0)
+        if flag_no_inline.search(m.group(1)): return m.group(0)
         if sm := self.script_src.search(m.group(1)): src = sm.group(1)
         else:
             body = m.group(2)
@@ -88,14 +94,17 @@ class Inliner:
         body = f'<!--inlined-css:{m.group(1)}--><style>{self.inline_css(body, m.group(2))}</style>'
         self.url_base = None; return body
     def inline_html(self, html):
+        html = flag_remove.sub(r'<!--inline removed \1\2-->', html)
         if self.minify: html = html_minify(html)
         html = self.head_tag.sub(self._head_sub, html)
         html = self.script_tag.sub(self._script_tag_sub, html)
         html = self.stylesheet.sub(self._css_sub, html)
+        if self.minify: html = self.html_comments.sub('', html)
         return html
     head_tag = re.compile(r'<html(?:\s.*?)?>.*?<head(?:\s.*?)?>', re.DOTALL+re.IGNORECASE)
     script_tag = re.compile(r'<script([^>]*)>(.*?)</script>', re.DOTALL)
     stylesheet = re.compile(r'''<link rel=["']stylesheet["'] href=["']([^"']+)["']([^>]*)>''')
+    html_comments = re.compile(r'<!--.*?-->', re.DOTALL)
     def _import_sub(self, relative_base):
         def _import_sub_(m):
             src = os.path.join(relative_base, m.group(1))
@@ -121,8 +130,8 @@ class Inliner:
         eprint(f'Inlining CSS url("{m.group(1)}"): {mt}')
         return f'url("data:{mt};base64,{base64.b64encode(self.fetch(m.group(1), text=False)).decode()}")'
     def inline_css(self, css, attrs):
-        if self.minify: css = css_minify(css, 'inline-strip' in attrs)
-        if 'inline-urls' in attrs: css = self.css_url.sub(self._css_url_sub, css)
+        if self.minify: css = css_minify(css, flag_inline_strip in attrs)
+        if flag_inline_urls in attrs: css = self.css_url.sub(self._css_url_sub, css)
         return css
     css_url = re.compile(r'url\(["\']?(.*?)["\']?\)')
 #</Header
