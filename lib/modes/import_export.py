@@ -1,5 +1,6 @@
 #> Imports
-import os, sys                        # basic system libraries
+import sys                            # basic system libraries
+from pathlib import Path              # path manipulation
 import argparse                       # type hinting
 import json                           # load .vsmmgr files (.json files with a changed extension)
 from packaging.version import Version # version comparison
@@ -19,12 +20,12 @@ def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
     p.add_argument('import_file', default=sys.stdin, nargs='?', metavar='source', type=argparse.FileType(), help='The .vsmmgr file to import mods from (reads from StdIn if not specified)')
-    p.add_argument('destination', default='.', nargs='?', type=os.path.realpath, help='Where the mods are (defaults to ".", AKA current directory')
+    p.add_argument('destination', default=Path.cwd(), nargs='?', type=Path, help='Where the mods are (defaults to ".", AKA current directory')
 def import_command(ns: argparse.Namespace):
     installs = {}
-    if not os.path.exists(ns.destination):
+    if not ns.destination.exists():
         eprint(f'Path {ns.destination} does not exist! Create it (y/N)? >', end='')
-        if input().lower() == 'y': os.makedirs(ns.destination)
+        if input().lower() == 'y': ns.destination.mkdir(parents=True)
         else: exit(1)
     for m,rs in Mod.multiget_upstream_releases(
             (m for m in Mod.import_list(json.load(ns.import_file)) if m.id not in ns.exclude),
@@ -57,16 +58,16 @@ def import_command(ns: argparse.Namespace):
         installs[m] = rs[0]
     if ns.interactive:
         for m,r in installs.items():
-            eprint(f'Install {ns.file_url.format(r["mainfile"])} to {os.path.join(ns.path, r["filename"])}? (y/N) >', end='')
+            eprint(f'Install {ns.file_url.format(r["mainfile"])} to {ns.path.destination / r["filename"]}? (y/N) >', end='')
             if input().lower() != 'y': del installs[m]
     if not len(installs):
         eprint('Nothing to do - no mods were selected'); return
     eprint(f'{len(installs)} mods to install')
-    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, os.path.join(ns.destination, '{}'), nthreads=ns.threads, callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
+    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, ns.destination / '{}', nthreads=ns.threads, callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
 
 # Export
 def add_export_arguments(p: argparse.ArgumentParser):
-    p.add_argument('-o', '--output', default=sys.stdout, metavar='path', help='Where to write the .vsmmgr file to (writes to StdOut if not given)')
+    p.add_argument('-o', '--output', default=sys.stdout, metavar='path', type=Path, help='Where to write the .vsmmgr file to (writes to StdOut if not given)')
     p.add_argument('-e', '--exclude', metavar='modid', default=[], action='append', help='Add a mod ID to not be exported (can be used multiple times)')
     p.add_argument('--overwrite', action='store_true', help='Overwrite the output file if it already exists')
     p.add_argument('--strip-version', action='store_true', help='Don\'t include version numbers')
@@ -76,11 +77,10 @@ def add_export_arguments(p: argparse.ArgumentParser):
 
 def export_command(ns: argparse.Namespace):
     out = ns.output
-    if isinstance(out, str):
-        if os.path.isdir(out):
-            print(out)
-            out = os.path.join(out, f'{os.path.basename(os.path.abspath(ns.path))}.vsmmgr')
-        if (not ns.overwrite) and os.path.exists(out):
+    if isinstance(out, Path):
+        if out.is_dir():
+            out /= ns.path.with_suffix('.vsmmgr').name
+        if (not ns.overwrite) and out.exists():
             eprint(f'Destination "{out}" already exists, use --overwrite to overwrite')
             exit(1)
         out = open(out, 'w')
@@ -93,7 +93,7 @@ def export_command(ns: argparse.Namespace):
             eprint(m)
             match ns.error_behavior:
                 case 'ask':
-                    eprint(f'Could not read mod info for {os.path.basename(p)}. Continue (Y/n), or retry (r)? >', end='')
+                    eprint(f'Could not read mod info for {p.name}. Continue (Y/n), or retry (r)? >', end='')
                     match input().lower():
                         case 'n': exit(1)
                         case 'r': miter.send(True)

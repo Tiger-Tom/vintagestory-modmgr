@@ -138,4 +138,4 @@ class Inliner:
 
 #> Main >/
 def smoosh(path, minify, skip_css_urls):
-    return Inliner(os.path.dirname(path), minify=minify, skip_css_urls=skip_css_urls).inline_html(fetch(path))
+    return Inliner(os.path.dirname(path), minify=minify, skip_css_urls=skip_css_urls).inline_html(fetch(str(path)))

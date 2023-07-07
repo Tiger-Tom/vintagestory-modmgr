@@ -1,5 +1,6 @@
 #> Imports
-import os, sys                        # basic system libraries
+import sys                            # basic system libraries
+from pathlib import Path              # path manipulation
 import argparse                       # type hinting
 from packaging.version import Version # version comparison
 
@@ -15,7 +16,7 @@ def add_arguments(p: argparse.ArgumentParser):
     p.add_argument('-e', '--error-behavior', metavar='mode', choices=('ask', 'ignore', 'fail'), default='ask', help='How to behave when an error is encountered (default: "ask")')
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
-    p.add_argument('path', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory)')
+    p.add_argument('path', default=Path.cwd(), nargs='?', type=Path, help='Where the mods are (defaults to ".", AKA current directory)')
 
 def command(ns: argparse.Namespace):
     mods = []
@@ -27,7 +28,7 @@ def command(ns: argparse.Namespace):
             eprint(m)
             match ns.error_behavior:
                 case 'ask':
-                    eprint(f'Could not read mod info for {os.path.basename(p)}. Continue (Y/n), or retry (r)? >', end='')
+                    eprint(f'Could not read mod info for {p.name}. Continue (Y/n), or retry (r)? >', end='')
                     match input().lower():
                         case 'n': exit(1)
                         case 'r': miter.send(True)
@@ -70,12 +71,12 @@ def command(ns: argparse.Namespace):
         updates[m] = cs[v]
     if not ns.unattended:
         for m,r in tuple(updates.items()):
-            eprint(f'Install {ns.file_url.format(r["mainfile"])} to {os.path.join(ns.path, r["filename"])}? (y/N) >', end='')
+            eprint(f'Install {ns.file_url.format(r["mainfile"])} to {ns.path / r["filename"]}? (y/N) >', end='')
             if input().lower() != 'y': del updates[m]
     if not len(updates):
         eprint('Nothing to do - no updates were selected'); return
     eprint(f'{len(updates)} update(s) to apply')
-    Mod.multidownload(tuple(r['mainfile'] for r in updates.values()), ns.file_url, os.path.join(ns.path, '{}'), nthreads=ns.threads, callback_start=lambda f,d: eprint(f'Downloading {f} to {d}'), callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
+    Mod.multidownload(tuple(r['mainfile'] for r in updates.values()), ns.file_url, ns.path / '{}', nthreads=ns.threads, callback_start=lambda f,d: eprint(f'Downloading {f} to {d}'), callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
     for m in updates.keys():
         eprint(f'Removing old mod {m.source}')
-        os.remove(m.source)
+        m.source.unlink()

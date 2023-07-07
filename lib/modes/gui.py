@@ -20,17 +20,19 @@ def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
 #</Setup PyI_Splash
 
 #> Imports
-import sys, os                 # basic system libraries
-import importlib.machinery     # import GU/API modules
-import argparse                # argument parsing
-try: import webview            # HTML/CSS/JS GUI
+import sys, os                  # basic system libraries
+import importlib.machinery      # import GU/API modules
+import argparse                 # argument parsing
+from importlib import resources # ZipApp resources
+from pathlib import Path        # fancy path manipulation
+try: import webview             # HTML/CSS/JS GUI
 except Exception as e: webview = e
 try:
-    import pyi_splash          # PyInstaller splash screen
+    import pyi_splash           # PyInstaller splash screen
     splash = _pyi_splash
 except ModuleNotFoundError: splash = lambda _: None
 try:
-    from gui import guapi      # default Graphical User / Application Protocol Interface
+    from gui import guapi       # default Graphical User / Application Protocol Interface
 except Exception as e: guapi = e
 from lib.basemod import Mod
 from lib.smoosh import smoosh
@@ -40,8 +42,8 @@ from lib.smoosh import smoosh
 eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 
 am_frozed = getattr(sys, 'frozen', False)
-builtin_gui_dir = os.path.join('gui', 'index.html') if not am_frozed else os.path.join(sys._MEIPASS, 'gui', 'index.html')
-has_builtin_gui = os.path.exists(builtin_gui_dir)
+builtin_gui_dir = resources.files('gui').joinpath('index.html') if not am_frozed else Path(sys._MEIPASS, 'gui', 'index.html')
+has_builtin_gui = builtin_gui_dir.exists()
 #</Setup
 
 #> Base Hooks
@@ -99,8 +101,8 @@ class BaseHook:
 #> Header >/
 if os.name == 'nt': cache_err = 'you are running Windows'
 else:
-    cache_dir_base = os.path.expanduser(f'~/.cache/{os.path.basename(sys.argv[0])}')
-    if os.path.exists(f'{cache_dir_base}/CacheStorage') and os.path.exists(f'{cache_dir_base}/WebKitCache'):
+    cache_dir_base = Path('~/.cache/', Path(sys.argv[0]).name).expanduser()
+    if (cache_dir_base / 'CacheStorage').exists() and (cache_dir_base / 'WebKitCache').exists():
         cache_err = False
     else: cache_err = f'{cache_dir_base} does not appear to exist'
 def add_arguments(p: argparse.ArgumentParser):
@@ -109,8 +111,8 @@ def add_arguments(p: argparse.ArgumentParser):
         p.description = 'GUI mode cannot be used without webview. Try `pip install webview` or otherwise installing python-pywebview?'
         return
     if has_builtin_gui:
-        p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
-    else: p.add_argument('-g', '--gui', metavar='path', required=True, help='The GUI file (or URI) to serve')
+        p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, type=Path, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
+    else: p.add_argument('-g', '--gui', metavar='path', required=True, type=Path, help='The GUI file (or URI) to serve')
     p.add_argument('-s', '--http-server', metavar='port', default=False, type=int, help='If provided, the web GUI and API will be served on a local HTTP server at the port (not recommended due to security concerns)')
     p.add_argument('-d', '--debug', action='store_true', help='Start PyWebView with debug=True, opening/enabling inspect tools and JS console')
     if not cache_err: p.add_argument('--clear-cache', action='store_true', help=f'Tries to clear the cache by removing {cache_dir_base}')
@@ -128,7 +130,7 @@ def command(ns: argparse.Namespace):
     if ns.clear_cache:
         splash('Removing cache')
         import shutil
-        for c in (f'{cache_dir_base}/CacheStorage', f'{cache_dir_base}/WebKitCache'):
+        for c in (cache_dir_base / 'CacheStorage', cache_dir_base / 'WebKitCache'):
             eprint(f'Clearing cache: deleting {c}'); splash(f'Removing cache: {c}')
             shutil.rmtree(c)
     # Check for errors
@@ -136,7 +138,7 @@ def command(ns: argparse.Namespace):
     if isinstance(webview, Exception):
         eprint('Cannot execute GUI, Python WebView does not appear to have been installed or properly loaded:'); eprint(webview)
         splash('Python WebView was not installed or properly loaded'); exit(2)
-    if not os.path.exists(ns.gui):
+    if not ns.gui.exists():
         eprint(f'{ns.gui} does not exist, can not continue')
         splash(f'{ns.gui} does not exist, can not continue'); exit(1)
     # Get GU/API
@@ -159,9 +161,8 @@ def command(ns: argparse.Namespace):
     else: hook = BaseHook(ns, am_frozed)
     if not ns.no_inline:
         eprint('Inlining'); splash('Inlining')
-        gui_dir = '{}.inlined{}'.format(*os.path.splitext(ns.gui))
-        with open(gui_dir, 'w') as f:
-            f.write(smoosh(ns.gui, minify=not ns.no_minify, skip_css_urls=ns.debug))
+        gui_dir = ns.gui.with_suffix(f'.inlined{ns.gui.suffix}')
+        gui_dir.write_text(smoosh(ns.gui, minify=not ns.no_minify, skip_css_urls=ns.debug))
     else: gui_dir = ns.gui
     try:
         splash('Setting up GU/API')
@@ -172,5 +173,5 @@ def command(ns: argparse.Namespace):
         hook.post_webview_start(webview)
     except Exception as e: hook.uncaught_exception(e)
     if not ns.no_inline:
-        try: os.remove(gui_dir)
+        try: gui_dir.unlink()
         except Exception: pass

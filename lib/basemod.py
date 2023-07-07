@@ -1,5 +1,6 @@
 #> Imports
-import glob, os                       # finding mods & path handling
+import os                             # system info + environment variables
+from pathlib import Path              # finding mods & path handling
 import requests, urllib               # get info from ModDB and download mods
 import re, hjson, zipfile             # read modinfo (JSON/zip and C#)
 import functools, multiprocessing     # optimizations
@@ -18,9 +19,9 @@ class Mod(dict): # dict makes it JSON serializable
         'id': r'id:\s*"([^"]*)"',
         'version': r'version\s*=\s*"([^"]*)"',
     }.items()}
-    VINTAGESTORY_MOD_PATH = os.path.join('VintagestoryData', 'Mods')
-    VINTAGESTORY_DATA_ROOT_LINUX_FALLBACK = os.path.expanduser('~/.config/')
-    VINTAGESTORY_DATA_ROOT_FALLBACK = '.'
+    VINTAGESTORY_MOD_PATH = Path('VintagestoryData', 'Mods')
+    VINTAGESTORY_DATA_ROOT_LINUX_FALLBACK = Path('~/.config/').expanduser()
+    VINTAGESTORY_DATA_ROOT_FALLBACK = Path.cwd()
     # Object Output Types
     def __repr__(self): return f'{self.id}@{self.version}'
     def __str__(self, noversion=False, nodesc=False):
@@ -33,13 +34,14 @@ class Mod(dict): # dict makes it JSON serializable
         return f'{self.name} [{self.id}] v{self.version}: {self.desc}'
     def __hash__(self): return hash((self.name, self.desc, self.id, self.version, self.source))
     # Initializers
-    def __init__(self, *, name: str = None, desc: str = None, id: str = None, version: Version = None, source: str = None):
+    def __init__(self, *, name: str = None, desc: str = None, id: str = None, version: Version = None, source: str | Path = None):
         if isinstance(version, str):
             self.raw_version = version
             self.version = Version(version)
         else:
             self.version = version
             self.raw_version = str(version)
+        if source is not None: source = Path(source)
         self.name, self.desc, self.id, self.source = name, desc, id, source # ugly code, sorry
         dict.__init__(self, name=name, desc=desc, id=id, version=self.raw_version, source=source)
     def __setattr__(self, i, v):
@@ -47,23 +49,25 @@ class Mod(dict): # dict makes it JSON serializable
         object.__setattr__(self, i, v)
     #  From files
     @classmethod
-    def from_file(cls, file: str):
-        if not os.path.exists(file): raise FileNotFoundError('Cannot read from a mod that does not exist')
+    def from_file(cls, file: str | Path):
+        file = Path(file)
+        if not file.exists(): raise FileNotFoundError('Cannot read from a mod that does not exist')
         if zipfile.is_zipfile(file):
             with zipfile.ZipFile(file) as zf, zf.open('modinfo.json') as f:
                 self = cls.from_json(f.read())
-        elif file.endswith('.cs'):
+        elif file.suffix == '.cs':
             with open(file) as cs:
                 self = cls.from_cs_source(cs.read())
-        elif file.endswith('.json'):
+        elif file.suffix == '.json':
             with open(file) as j:
                 self = cls.from_json(**hjson.load(f))
         else: raise ValueError(f'Cannot parse mod file {file}, it is not a zip file or .cs/.json file')
         self.source = file
         return self
     @classmethod
-    def from_directory(cls, path: str, *, hashable=False):
-        for p in glob.glob(os.path.join(path, '*.zip')) + glob.glob(os.path.join(path, '*.cs')):
+    def from_directory(cls, path: str | Path, *, hashable=False):
+        path = Path(path)
+        for p in path.glob('*.zip') + path.glob('*.cs'):
             while True:
                 try:
                     yield (cls.from_file(p),p)
@@ -136,7 +140,7 @@ class Mod(dict): # dict makes it JSON serializable
         fs = tuple(filenames)
         if nthreads < 1: nthreads = len(fs)
         with multiprocessing.pool.ThreadPool(min(nthreads, len(fs))) as p:
-            p.starmap(functools.partial(cls.download, url_base, callback_start=callback_start, callback_done=callback_done), zip(fs, (destination_base.format(os.path.basename(f)) for f in fs)))
+            p.starmap(functools.partial(cls.download, url_base, callback_start=callback_start, callback_done=callback_done), zip(fs, (destination_base.format(Path(f).name) for f in fs)))
         callback_alldone()
     # Import/Export-ing
     @staticmethod
@@ -161,12 +165,12 @@ class Mod(dict): # dict makes it JSON serializable
     @functools.cache
     def default_mod_directory(cls):
         if os.name == 'nt':
-            if os.path.exists(d := os.path.join(os.getenv('APPDATA'), cls.VINTAGESTORY_MOD_PATH)):
-                return d
+            if (p := Path(os.getenv('APPDATA'), cls.VINTAGESTORY_MOD_PATH)).exists():
+                return p
             return cls.VINTAGESTORY_DATA_ROOT_FALLBACK
         if os.getenv('XDG_CONFIG_HOME'):
-            if os.path.exists(d := os.path.join(os.getenv('XDG_CONFIG_HOME'), cls.VINTAGESTORY_MOD_PATH)):
-                return d
-        if os.path.exists(d := os.path.join(cls.VINTAGESTORY_DATA_ROOT_LINUX_FALLBACK, cls.VINTAGESTORY_MOD_PATH)):
-            return d
+            if (p := Path(os.getenv('XDG_CONFIG_HOME'), cls.VINTAGESTORY_MOD_PATH)).exists():
+                return p
+        if (p := Path(cls.VINTAGESTORY_DATA_ROOT_LINUX_FALLBACK, cls.VINTAGESTORY_MOD_PATH)).exists():
+            return p
         return cls.VINTAGESTORY_DATA_ROOT_FALLBACK
