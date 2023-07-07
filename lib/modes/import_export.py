@@ -58,7 +58,7 @@ def import_command(ns: argparse.Namespace):
     if not len(installs):
         eprint('Nothing to do - no mods were selected'); return
     eprint(f'{len(installs)} mods to install')
-    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, os.path.join(ns.path, '{}'), nthreads=ns.threads, callback=lambda f,d: eprint(f'Downloaded {f} to {d}'))
+    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, os.path.join(ns.path, '{}'), nthreads=ns.threads, callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
 
 # Export
 def add_export_arguments(p: argparse.ArgumentParser):

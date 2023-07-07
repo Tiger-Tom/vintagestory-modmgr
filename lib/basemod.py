@@ -132,7 +132,7 @@ class Mod(dict): # dict makes it JSON serializable
             f.write(cls._download(url_base.format(urllib.parse.quote(filename))))
         callback_done(filename, destination)
     @classmethod
-    def multidownload(cls, filenames, url_base, destination_base, *, nthreads=0, callback_alldone=lambda: None, callback_start=lambda f: None, callback_done=lambda f: None):
+    def multidownload(cls, filenames, url_base, destination_base, *, nthreads=0, callback_alldone=lambda: None, callback_start=lambda f, d: None, callback_done=lambda f, d: None):
         fs = tuple(filenames)
         if nthreads < 1: nthreads = len(fs)
         with multiprocessing.pool.ThreadPool(min(nthreads, len(fs))) as p:
