@@ -98,7 +98,7 @@ $lang.load = async function(lang, resetflags=true, already_fetched=false) {
             o.$VALUE = "";
             if ($lc("debug$attach_src")) o.$VALUE += o.$SOURCE+">";
             if ($lc("debug$attach_key")) o.$VALUE += o.$INDEX+"=";
-            o.$VALUE += ($lc("decode_as_uri")) ? decodeURI(val) : val;
+            o.$VALUE += ($lf("decode_as_uri")) ? decodeURI(val) : val;
         }
         //console.debug(`Formatting complete: ${o.$VALUE}`);
     }
