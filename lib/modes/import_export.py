@@ -19,9 +19,13 @@ def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
     p.add_argument('import_file', default=sys.stdin, nargs='?', metavar='source', type=argparse.FileType(), help='The .vsmmgr file to import mods from (reads from StdIn if not specified)')
-    p.add_argument('destination', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory')
+    p.add_argument('destination', default='.', nargs='?', type=os.path.realpath, help='Where the mods are (defaults to ".", AKA current directory')
 def import_command(ns: argparse.Namespace):
     installs = {}
+    if not os.path.exists(ns.destination):
+        eprint(f'Path {ns.destination} does not exist! Create it (y/N)? >', end='')
+        if input().lower() == 'y': os.makedirs(ns.destination)
+        else: exit(1)
     for m,rs in Mod.multiget_upstream_releases(
             (m for m in Mod.import_list(json.load(ns.import_file)) if m.id not in ns.exclude),
             nthreads=ns.threads, url=ns.api_url,
