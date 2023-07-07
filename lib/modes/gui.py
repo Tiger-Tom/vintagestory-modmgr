@@ -19,7 +19,7 @@ def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
 #> Imports
 import sys, os                 # basic system libraries
 import importlib.machinery     # import GU/API modules
-import argparse                # typehints
+import argparse                # argument parsing
 try: import webview            # HTML/CSS/JS GUI
 except Exception as e: webview = e
 try:
@@ -53,7 +53,7 @@ class BaseHook:
         '''called before the GU/API, returns kwargs for GUAPI.__init__'''
         eprint('GU/API about to be created'); self.splash('Setting up GU/API')
         return {}#{'initial_dir': initial_dir}
-    def post_api_create(self, guapi: 'GUAPI'):
+    def post_api_create(self, guapi: GUAPI):
         '''called after the GU/API is created'''
         eprint(f'GU/API created: {guapi}'); self.splash('Finished setting up GU/API')
         self.guapi = guapi
@@ -61,10 +61,10 @@ class BaseHook:
         '''called before webview.create_window, return value updates default kwargs'''
         eprint('Window about to be created'); self.splash('Setting up window')
         return {}
-    def post_window_created(self, w: 'webview.Window'):
+    def post_window_created(self, w: webview.Window):
         '''called after webview.create_window'''
         eprint(f'Window created: {w}'); self.splash('Finished setting up window')
-    def pre_webview_start(self, wv: 'webview'):
+    def pre_webview_start(self, wv: webview):
         '''called before webview.start, return value updates default kwargs'''
         eprint(f'WebView about to start: {wv}'); self.splash('Setting up Python WebView')
         self.webview = wv
@@ -73,7 +73,7 @@ class BaseHook:
         '''called by webview.start as func=, unless it was overridden by pre_webview_start'''
         eprint(f'WebView is starting/ed'); self.splash('Python WebView started')
         self.splash(False)
-    def post_webview_start(self, wv: 'webview'):
+    def post_webview_start(self, wv: webview):
         '''called after webview.start'''
         eprint(f'WebView was started: {wv}')
         self.webview = wv
