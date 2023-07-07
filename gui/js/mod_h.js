@@ -5,14 +5,14 @@ globalThis.$mod_h = {
             id = $mod_h.format(mod, "mod:%id%");
         li.classList.add("mod-element");
         li.id = id; li._mod = mod;
-        li.textContent = $mod_h.format(mod, version ? $f.mf.content.withversion : $f.mf.content.withoutvers);
-        li.title = $mod_h.format(mod, $l.mf.tooltip);
+        li.textContent = $mod_h.format(mod, version ? $l("[mf.content.withversion;") : $l("[mf.content.withoutvers;"));
+        li.title = $mod_h.format(mod, $l("[mf.tooltip;"));
         return li;
     },
     apply_description(elem, desc, desc_frame) {
         elem._desc = desc;
         let a = document.createElement("a");
-        a.textContent = $l.sy.generic.info_i;
+        a.textContent = $l("[sy.generic.info_i;");
         elem.insertBefore(a, elem.firstChild);
         a.onclick = function() {
             desc_frame.contentDocument.body.innerHTML = desc;
@@ -30,7 +30,15 @@ globalThis.$mod_h = {
         for (let e of parent.children)
             if (e._mod) yield e._mod;
     },
-    async insert(parent, iter) {
+    async insert(parent, aiter, version=true) {
+        for await (let m of aiter) {
+            console.debug(`Found mod ${m[1]}`);
+            parent.appendChild($mod_h.element(m[0], version));
+        }
+    },
+    /* getting mods */
+    async get_insert_mods(parent, path) {
+        await $mod_h.insert(parent, await $g.m.from_directory(path));
     },
     /* upstream */
     async fetch(path) {
@@ -39,16 +47,16 @@ globalThis.$mod_h = {
     /* text */
     format(mod, fstring, on_not_found={}, scan_patt=/(?<!%)%(\w+?)%(?!%)/g) {
         let default_on_not_found = {
-            id: $f.default.id,
-            name: $f.default.name,
-            desc: $f.default.desc,
-            version: $f.default.version,
-            source: $f.default.source,
+            id: $l("[mf.default.id;"),
+            name: $l("[mf.default.name;"),
+            desc: $l("[mf.default.desc;"),
+            version: $l("[mf.default.version;"),
+            source: $l("[mf.default.source;"),
         }, str = fstring;
         let nf = { ...default_on_not_found, ...on_not_found, };
         while (str.search(scan_patt) !== -1)
-            str = str.replaceAll(scan_patt, (m, k, o, s) => mod.hasOwnProperty(k)
-                ? (mod[k] === null) ? nf[k] : mod[k]
+            str = str.replaceAll(scan_patt, (m, k, o, s) => nf.hasOwnProperty(k)
+                ? (mod[k] === null || mod[k] === undefined) ? nf[k] : mod[k]
                 : ($error("formatting_mod", m, `Bad f-string element "${m}" in "${s}"`) || `%%${m}%%`));
         return str.replaceAll("%%", "%"); // allow escapes with %%
     },
