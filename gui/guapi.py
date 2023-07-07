@@ -1,5 +1,8 @@
 # Graphical User / Application Protocol Interface
 
+# TIME TRAVEL
+from __future__ import annotations
+
 #> Imports
 import os, sys         # basic system libraries
 import inspect         # introspection
@@ -27,12 +30,12 @@ def hook_factory(basehook: type):
             }
         def pre_dupwindow_created(self):
             return self.pre_window_created() | {}
-        def post_window_created(self, w: 'webview.Window', *, main = True):
+        def post_window_created(self, w: webview.Window, *, main = True):
             super().post_window_created(w)
             if main: self.guapi.windows['main'] = w
-        def post_dupwindow_created(self, w: 'webview.Window'):
+        def post_dupwindow_created(self, w: webview.Window):
             self.post_window_created(w, main=False)
-        def pre_webview_start(self, wv: 'webview'):
+        def pre_webview_start(self, wv: webview):
             self.guapi.webview = wv
             return super().pre_webview_start(wv) | {
                 'private_mode': False, # save cookies, localstorage, cache
@@ -107,7 +110,7 @@ class GUAPI_Layout:
     )
 class GUAPI_Base(GUAPI_Layout):
     __slots__ = ()
-    def __init__(self, *, mod: 'Mod', hooks: 'Hook', debug: bool, flags: tuple[str]):
+    def __init__(self, *, mod: Mod, hooks: Hook, debug: bool, flags: tuple[str]):
         super().__init__()
         self.Mod = mod; self.webview = None
         self.hooks = hooks; self.debug = debug; self.flags = flags
@@ -133,7 +136,7 @@ class GUAPI_BaseWindows(GUAPI_Base):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.windows = CustomErrorDict(WindowNotFound, LockedDict)()
-    def _win_extract_data(self, w: 'webview.Window'):
+    def _win_extract_data(self, w: webview.Window):
         return {
             'title': w.title,
             'url': w.get_current_url(),

@@ -1,3 +1,6 @@
+# TIME TRAVEL
+from __future__ import annotations
+
 #> Setup PyI_Splash
 def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
     # False closes splash, str updates text; returns success or exception
