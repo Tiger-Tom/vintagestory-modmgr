@@ -38,6 +38,7 @@ def is_url(src):
 @functools.cache
 def _fetch(src, headers=()): return requests.get(src, headers=dict(headers))
 def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> str | bytes:
+    if is_url(base) and not is_url(src): src = requests.compat.urljoin(base, src)
     if is_url(src):
         eprint(f'Fetching remote {src}')
         r = _fetch(src, headers=tuple(headers.items()))
@@ -48,21 +49,26 @@ def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> st
     with open(src, f'r{"" if text else "b"}') as f: return f.read()
 
 class Inliner:
-    __slots__ = ('base', 'minify')
+    __slots__ = ('base', 'url_base', 'minify')
     # flags
     no_inline = re.compile('noinline')
     # not flags
     pbase_attr = '=["\']([^"\']+)["\']'
     def __init__(self, base, minify):
         self.base = base; self.minify = minify
-    def fetch(self, src, **kw): return fetch(src, self.base, **kw)
+        self.url_base = None
+    def insert_info(self):
+        return f'globalThis.___inlined___={"globalThis.___minified___=" if self.minify else ""}1;'
+    def fetch(self, src, **kw):
+        print(self.url_base or self.base)
+        return fetch(src, self.url_base or self.base, **kw)
     def _script_tag_sub(self, m):
         if self.no_inline.search(m.group(1)): return m.group(0)
         if sm := self.script_src.search(m.group(1)): src = sm.group(1)
         else:
             body = m.group(2)
             if self.minify: body = js_minify(body)
-            return f'<script{m.group(1)}>globalThis.___inlined___=1;{body}</script>'
+            return f'<script{m.group(1)}>{body}</script>'
         ismodule = self.script_is_module.search(m.group(1)) != None
         isdefer = self.script_is_defer.search(m.group(1)) != None
         body = self.inline_js(self.fetch(src), os.path.dirname(src))
@@ -72,22 +78,30 @@ class Inliner:
     script_is_module = re.compile('type=["\']module["\']')
     script_is_defer = re.compile('defer')
     script_src = re.compile(f'src{pbase_attr}')
+    def _head_sub(self, m):
+        eprint(f'Embedding information (___inlined___=1; ___minified___={self.minify:d})')
+        return f'{m.group(0)}<script>{self.insert_info()}</script>'
     def _css_sub(self, m):
         eprint(f'Inlining CSS: {m.group(1)}')
-        return f'<!--inlined-css:{m.group(1)}--><style>{self.inline_css(self.fetch(m.group(1)), m.group(2))}</style>'
+        body = self.fetch(m.group(1))
+        if is_url(m.group(1)): self.url_base = m.group(1)
+        body = f'<!--inlined-css:{m.group(1)}--><style>{self.inline_css(body, m.group(2))}</style>'
+        self.url_base = None; return body
     def inline_html(self, html):
         if self.minify: html = html_minify(html)
+        html = self.head_tag.sub(self._head_sub, html)
         html = self.script_tag.sub(self._script_tag_sub, html)
         html = self.stylesheet.sub(self._css_sub, html)
         return html
+    head_tag = re.compile(r'<html(?:\s.*?)?>.*?<head(?:\s.*?)?>', re.DOTALL+re.IGNORECASE)
     script_tag = re.compile(r'<script([^>]*)>(.*?)</script>', re.DOTALL)
-    stylesheet = re.compile(r'''<link rel=["']stylesheet["'] href=["']([^"']+)["']([^>]+)>''')
+    stylesheet = re.compile(r'''<link rel=["']stylesheet["'] href=["']([^"']+)["']([^>]*)>''')
     def _import_sub(self, relative_base):
         def _import_sub_(m):
             src = os.path.join(relative_base, m.group(1))
             eprint(f'Inlining JS module: {src}')
             exports = f'__export_{hex(abs(hash(src)))}'
-            body = f'((async function(){{"inlined-module:{src}"; globalThis.___inlined___=1; let {exports}={{}}; {self.inline_js(self.fetch(src), os.path.dirname(src))}; return {exports};}})())'
+            body = f'((async function(){{"inlined-module:{src}"; let {exports}={{}}; {self.inline_js(self.fetch(src), os.path.dirname(src))}; return {exports};}})())'
             body = self.module_export_default.sub(rf'{exports}["default"]=\1;', f'{body}')
             if self.minify: return js_minify(body)
             return body
