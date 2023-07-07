@@ -18,8 +18,8 @@ def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('--release', default='auto', choices=('auto', 'auto_ask', 'latest', 'ask'), help='Which release of the mod to install. "auto" (the default) and "auto_ask" check if it\'s specified in the file, or gets the latest if it isn\'t for "auto" and asks for "auto_ask", "ask" and "latest" are self-explanatory')
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
-    p.add_argument('path', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory')
     p.add_argument('import_file', default=sys.stdin, nargs='?', metavar='source', type=argparse.FileType(), help='The .vsmmgr file to import mods from (reads from StdIn if not specified)')
+    p.add_argument('destination', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory')
 def import_command(ns: argparse.Namespace):
     installs = {}
     for m,rs in Mod.multiget_upstream_releases(
@@ -58,7 +58,7 @@ def import_command(ns: argparse.Namespace):
     if not len(installs):
         eprint('Nothing to do - no mods were selected'); return
     eprint(f'{len(installs)} mods to install')
-    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, os.path.join(ns.path, '{}'), nthreads=ns.threads, callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
+    Mod.multidownload(tuple(r['mainfile'] for r in installs.values()), ns.file_url, os.path.join(ns.destination, '{}'), nthreads=ns.threads, callback_done=lambda f,d: eprint(f'Downloaded {f} to {d}'))
 
 # Export
 def add_export_arguments(p: argparse.ArgumentParser):
