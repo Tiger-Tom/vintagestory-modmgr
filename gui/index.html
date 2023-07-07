@@ -61,6 +61,7 @@
         
         async function find_mods() {
             set_all_by_cname("d_w_fmods", "disabled", true);
+            $mod_h.get_insert_mods($e.mod_container, $e.mod_dir.value);
             set_all_by_cname("d_w_fmods", "disabled", false);
         }
         
@@ -118,7 +119,9 @@
         .d_w_fmods { /* disabled while fetching mods */ }
     </style>
 </head>
-<body>
+<body style="width: 100%; margin: 0; padding: 0;">
+    <!-- background -->
+    <div id="background_main" style="background-color: #000000AA; margin: 0; padding: 16px;">
     <!-- top bar-->
     <div style="width: 100%;">
         <div style="float: left;">
@@ -136,7 +139,7 @@
         <button onclick="" class="d_u_guapi d_w_fmods" disabled title="[bt.fetchmeta.dsc;">[bt.fetchmeta;</button>
     </div>
     <!-- mods -->
-    <ul id="mod_container" class="hidden-without-child_li"><br></ul>
+    <ul id="mod_container" class="hidden-without-child_li"></ul>
     <!-- extended mod details (from API) -->
     <div id="details_container"><br>
         <span id="details_close_button" class="clickable" onclick="close_details();">[sy.bt.close;</span>
@@ -147,5 +150,7 @@
     <br>
     <footer id="lang_conf" class="black-outline" style="float: left; color: #D0D0D0;">[lang loading...]</footer>
     <cite style="right: 4px; --color: #FFFFFF66; opacity: 80%;" class="color-outline floaty-foot" title="[attr.dsc;">[attr;</cite>
+    <!-- end background -->
+    </div>
 </body>
 </html>
