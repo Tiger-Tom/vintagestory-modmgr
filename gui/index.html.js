@@ -1,17 +1,17 @@
 // top bar buttons
-function new_window() {
+globalThis.new_window = function() {
     new $guapi.Window().duplicate();
 }
-function tutorial() {
+globalThis.tutorial = function() {
     for (let m of ["thanks", "infotutor", "infotutor.2", "infotutor.3"])
         $l.alert(`[mg.${m};`);
 }
-function reload() {
+globalThis.reload = function() {
     if ($l.confirm("[mg.confirm.rel;")) location.reload();
 }
 
 // mods-dir bar buttons
-async function change_dir() {
+globalThis.change_dir = async function() {
     set_all_by_attr("d_w_chdir", "disabled", true);
     let mdir = await $g.open_dialog($wid, "folder", {
         directory: await $g.m.default_directory(),
@@ -19,14 +19,14 @@ async function change_dir() {
     if (mdir !== null) $e.mod_dir.value = mdir;
     set_all_by_attr("d_w_chdir", "disabled", false);
 }
-async function find_mods() {
+globalThis.find_mods = async function() {
     set_all_by_attr("d_w_fmods", "disabled", true);
     $mod_h.get_insert_mods($e.mod_container, $e.mod_dir.value);
     set_all_by_attr("d_w_fmods", "disabled", false);
 }
 
 // details box close button
-function close_details() {
+globalThis.close_details = function() {
     $e.details.contentWindow.location.replace("about:blank");
     $e.details_container.style.display = "none";
 }
