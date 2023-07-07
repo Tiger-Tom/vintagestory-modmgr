@@ -58,15 +58,15 @@ def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> st
     with open(src, f'r{"" if text else "b"}') as f: return f.read()
 
 class Inliner:
-    __slots__ = ('base', 'url_base', 'minify')
+    __slots__ = ('base', 'url_base', 'minify', 'skip_css_urls')
     pbase_attr = '=["\']([^"\']+)["\']'
-    def __init__(self, base, minify):
+    def __init__(self, base, minify, skip_css_urls):
         self.base = base; self.minify = minify
+        self.skip_css_urls = skip_css_urls
         self.url_base = None
     def insert_info(self):
         return f'globalThis.___inlined___={"globalThis.___minified___=" if self.minify else ""}1;'
     def fetch(self, src, **kw):
-        print(self.url_base or self.base)
         return fetch(src, self.url_base or self.base, **kw)
     def _script_tag_sub(self, m):
         if flag_no_inline.search(m.group(1)): return m.group(0)
@@ -131,11 +131,11 @@ class Inliner:
         return f'url("data:{mt};base64,{base64.b64encode(self.fetch(m.group(1), text=False)).decode()}")'
     def inline_css(self, css, attrs):
         if self.minify: css = css_minify(css, flag_inline_strip in attrs)
-        if flag_inline_urls in attrs: css = self.css_url.sub(self._css_url_sub, css)
+        if (flag_inline_urls in attrs) and (not self.skip_css_urls): css = self.css_url.sub(self._css_url_sub, css)
         return css
     css_url = re.compile(r'url\(["\']?(.*?)["\']?\)')
 #</Header
 
 #> Main >/
-def smoosh(path, minify):
-    return Inliner(os.path.dirname(path), minify).inline_html(fetch(path))
+def smoosh(path, minify, skip_css_urls):
+    return Inliner(os.path.dirname(path), minify=minify, skip_css_urls=skip_css_urls).inline_html(fetch(path))
