@@ -19,7 +19,7 @@ def add_import_arguments(p: argparse.ArgumentParser):
     p.add_argument('--api-url', metavar='url', default='https://mods.vintagestory.at/api/mod/{}', help='The URL for querying mod information from, replacing "{}" with the mod\'s ID (default: "https://mods.vintagestory.at/api/mod/{}")')
     p.add_argument('--file-url', metavar='url', default='https://mods.vintagestory.at/{}', help='The base URL for downloading files, replacing "{}" with the mod API\'s "mainfile" value (default: "https://mods.vintagestory.at/{}")')
     p.add_argument('path', default='.', nargs='?', help='Where the mods are (defaults to ".", AKA current directory')
-    p.add_argument('import_file', default=sys.stdin, nargs='?', metavar='path', type=argparse.FileType(), help='The .vsmmgr file to import mods from (reads from StdIn if not specified)')
+    p.add_argument('import_file', default=sys.stdin, nargs='?', metavar='source', type=argparse.FileType(), help='The .vsmmgr file to import mods from (reads from StdIn if not specified)')
 def import_command(ns: argparse.Namespace):
     installs = {}
     for m,rs in Mod.multiget_upstream_releases(
