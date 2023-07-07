@@ -106,10 +106,9 @@ class Mod(dict): # dict makes it JSON serializable
         return sorted(self.get_upstream_metadata(url=url, callback_start=callback_start, callback_done=callback_done)['mod']['releases'], key=lambda r: r['releaseid'], reverse=True)
     @staticmethod
     def _multiget_(fn, mods, kwargs={}, nthreads=0):
-        print(nthreads)
         m = tuple(mods); vals = []
-        if nthreads < 1: nthreads = len(mods)
-        with multiprocessing.pool.ThreadPool(min(nthreads, len(mods))) as p:
+        if nthreads < 1: nthreads = len(m)
+        with multiprocessing.pool.ThreadPool(min(nthreads, len(m))) as p:
             return zip(m, p.map(functools.partial(fn, **kwargs), m))
         return vals
     @classmethod
