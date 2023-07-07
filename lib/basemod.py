@@ -106,12 +106,11 @@ class Mod(dict): # dict makes it JSON serializable
         return sorted(self.get_upstream_metadata(url=url, callback_start=callback_start, callback_done=callback_done)['mod']['releases'], key=lambda r: r['releaseid'], reverse=True)
     @staticmethod
     def _multiget_(fn, mods, kwargs={}, nthreads=0):
-        m = list(mods); vals = []
+        print(nthreads)
+        m = tuple(mods); vals = []
         if nthreads < 1: nthreads = len(mods)
-        with multiprocessing.pool.ThreadPool(nthreads) as p:
-            while m:
-                mp = [m.pop() for _ in range(min(nthreads, len(m)))]
-                vals.extend(zip(mp, p.map(functools.partial(fn, **kwargs), mp)))
+        with multiprocessing.pool.ThreadPool(min(nthreads, len(mods))) as p:
+            return zip(m, p.map(functools.partial(fn, **kwargs), m))
         return vals
     @classmethod
     def multiget_upstream_metadata(cls, mods: tuple[typing.Self], *, nthreads=0, callback_alldone=lambda ms: None, **kwargs):
@@ -135,13 +134,10 @@ class Mod(dict): # dict makes it JSON serializable
         callback_done(filename, destination)
     @classmethod
     def multidownload(cls, filenames, url_base, destination_base, *, nthreads=0, callback_alldone=lambda: None, callback_start=lambda f: None, callback_done=lambda f: None):
-        fs = list(filenames)
+        fs = tuple(filenames)
         if nthreads < 1: nthreads = len(fs)
-        with multiprocessing.pool.ThreadPool(nthreads) as p:
-            while fs:
-                fp = [fs.pop() for _ in range(min(nthreads, len(fs)))]
-                ds = [destination_base.format(os.path.basename(f)) for f in fp]
-                p.starmap(functools.partial(cls.download, url_base, callback_start=callback_start, callback_done=callback_done), zip(fp, ds))
+        with multiprocessing.pool.ThreadPool(min(nthreads, len(fs))) as p:
+            p.starmap(functools.partial(cls.download, url_base, callback_start=callback_start, callback_done=callback_done), zip(fs, (destination_base.format(os.path.basename(f)) for f in fs)))
         callback_alldone()
     # Import/Export-ing
     @staticmethod
