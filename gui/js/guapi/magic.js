@@ -39,6 +39,8 @@ const MagicMethod = class extends (async()=>{}).constructor {
     static convert_object(obj, auto_iter=true) {
         /* converts any of the objects keys that end with () into magic methods */
         let o = {...obj};
+        if (o._converted) return o;
+        o._converted = true;
         for (let k in o)
             if ((typeof(k) === "string") && (typeof(o[k]) === "string"))
                 if (k.endsWith("()")) o[k.slice(0, -2)] = new MagicMethod(o[k]);
@@ -61,26 +63,25 @@ const MagicMethod = class extends (async()=>{}).constructor {
         let o = MagicMethod.convert_object(obj), can = MagicMethod.object_can_be_iterable(o);
         o._is_consumed = false;
         o[Symbol.asyncIterator] = function() {
+            console.info(o);
             if (!can)
                 throw "Supposed \"iterator\" object has neither a __next__ nor a send function!";
             let tracked = track_vals ? [] : undefined;
-            let body = `
-                if (o._is_consumed) return true;
+            return { next: async function(
+                nval=((can & MagicMethod.ITER_SEND) && relaxed_send) ? null : undefined
+            ) {
+                if (o._is_consumed) return {value: tracked, done: true};
                 try {
-                    let v = await o.${(can & MagicMethod.ITER_SEND) ? "send(nval)" : "__next__()"};
-                    ${track_vals ? "tracked.push(v);" : ""}
+                    let v = await ((can & MagicMethod.ITER_SEND) ? o.send(nval) : o.__next__());
+                    if (track_vals) tracked.push(v);
                     return {value: v, done: false};
-                }
-                catch (e) {
+                } catch(e) {
                     if (e.name === "StopIteration" || e.name === "MagicNotFound") {
                         o._is_consumed = true;
                         return {value: tracked, done: true};
-                    }
-                    throw e;
-                }`, af = async function(){}.constructor;
-            return {
-                next: (can & MagicMethod.ITER_SEND) ? af(`nval=${relaxed_send ? "null" : "undefined"}`, body) : af(body),
-            };
+                    }; throw e;
+                }
+            } };
         }; return o;
     }
 };
