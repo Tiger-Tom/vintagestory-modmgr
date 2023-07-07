@@ -69,7 +69,7 @@ def command(ns: argparse.Namespace):
             v = 0
         updates[m] = cs[v]
     if not ns.unattended:
-        for m,r in updates.items():
+        for m,r in tuple(updates.items()):
             eprint(f'Install {ns.file_url.format(r["mainfile"])} to {os.path.join(ns.path, r["filename"])}? (y/N) >', end='')
             if input().lower() != 'y': del updates[m]
     if not len(updates):
