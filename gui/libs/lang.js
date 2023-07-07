@@ -59,6 +59,11 @@ globalThis.$l = function(text) {
     return t;
 }; Object.assign($l, $lang.trans);
 $lang.trans = $l;
+/// additional bindings
+$l._bind = func => (text => func($l(text)));
+$l.alert   = $l._bind(alert);
+$l.confirm = $l._bind(confirm);
+$l.prompt  = $l._bind(prompt);
 // get flags / config
 globalThis.$lf = k => parseInt($l._flags?.[k]?.$VALUE);
 globalThis.$lc = k => parseInt($l._config?.[k]?.$VALUE);
@@ -74,7 +79,7 @@ $lang.load = async function(lang, resetflags=true, already_fetched=false) {
     if (resetflags) Object.keys($lf).forEach(p => delete $lf[p]);
     let text = lang;
     if (!already_fetched) {
-        let uri = `lang/${lang}.lang`;
+        let uri = `../lang/${lang}.lang`;
         console.info(`Fetching lang at ${uri}`);
         text = (await (await fetch(uri)).text());
     }
@@ -108,7 +113,7 @@ $lang.load = async function(lang, resetflags=true, already_fetched=false) {
 $lang.loadpacks = async function(packs) {
     let ploaded = {};
     await Promise.all(packs.map(async function(p) {
-        let t = await (await fetch(`lang/packs/${p}.langp`)).text();
+        let t = await (await fetch(`../lang/packs/${p}.langp`)).text();
         let id = t.match($lang.pack_id)[1];
         ploaded[id] = {
             id: id, data: t,
@@ -129,8 +134,7 @@ $lang.select_pack = async function(id, apply_all=true, stack=[], stack_max=8) {
             $error("lang_pack", `${stack.join(".")}.${pack.base}:notfound`, `Failed to load base lang pack ${pack.base} for pack-stack ${stack.join(".")} as it does not exist`);
         else $lang.select_pack(pack.base, false, stack);
     await $lang.load(pack.data, false, true, true);
-    await $lang.strip();
-    if (apply_all) await $lang.applyALL();
+    if (apply_all) { await $lang.strip(); await $lang.applyALL(); }
 };
 // applying languages to elements
 $lang.applyALL = async function() {
@@ -139,6 +143,7 @@ $lang.applyALL = async function() {
     await $lang.apply(document.body);
 };
 $lang.apply = async function(elem=document.body) {
+    if (elem === null) return;
     function mutate_field(elem, field) {
         if ((elem[field] === undefined) || (elem[field] === "")) return;
         let n = $l(elem[field]);
@@ -159,6 +164,7 @@ $lang.apply = async function(elem=document.body) {
     await p;
 };
 $lang.strip = async function(elem=document.body, recurse=true) {
+    if (elem === null) return;
     async function _strip(e) {
         if (e[$lang.backup_attr] === undefined) return;
         Object.assign(e, e[$lang.backup_attr]);

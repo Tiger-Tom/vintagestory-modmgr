@@ -2,15 +2,10 @@
 <html>
 <head>
     <!-- base libraries -->
-    <script src="js/errors.js"></script>
-    <script src="js/storage.js"></script>
-    <!-- style loading -->
-    <link rel="stylesheet" href="style/style.css"> <!-- style for my website from when I was about 14 -->
-    <link rel="stylesheet" href="style/resizer.css">
-    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css" inline-strip inline-urls> <!-- steal that style -->
-    <!-- language loading -->
-    <script src="lang/lang.js"></script>
-    <script>
+    <script src="libs/errors.js"></script>
+    <script src="libs/storage.js"></script>
+    <!--  lang loading  -->
+    <script src="libs/lang.js"></script><script>
         $lang.__ready = new Promise(async function(resolve) {
             await $lang.loads([     // sync loads
                 //"debug/debug_flags",
@@ -26,131 +21,61 @@
             await $lang.select_pack($sto.get("language.selection", "en"));
             resolve();
         });
-        globalThis.lalert = text => alert($l(text));
     </script>
-    <!-- GU/API and mods header -->
-    <script src="js/guapi.js" type="module"></script>
-    <script src="js/mod_h.js"></script>
-    <!-- elements -->
-    <script src="js/elements/element_helpers.js" defer></script>
-    <script src="js/elements/resizable_frame.js"></script>
+    <!--  element manipulation  -->
+    <script src="libs/element_helper.js" defer></script>
+    <script src="libs/resizable_frame.js" async></script>
+    <link rel="stylesheet" href="libs/resizable_frame.css">
+    <!-- GU/API module and mods header -->
+    <script src="guapi/guapi.js" type="module"></script>
+    <script src="guapi/mod_h.js" async></script>
     <!-- main script -->
-    <script src="js/index.html.js" defer></script>
-    <!--  buttons  -->
-    <script>
-        // top bar
-        function reload() {
-            if (confirm($l("[mg.confirm.rel;"))) location.reload();
-        }
-        function tutorial() {
-            lalert("[mg.thanks;");
-            lalert("[mg.infotutor;");
-            lalert("[mg.infotutor.2;");
-            lalert("[mg.infotutor.3;");
-        }
-        // find/load mods bar
-        async function change_dir() {
-            set_all_by_cname("d_w_chdir", "disabled", true);
-            let mdir = await $g.open_dialog($wid, "folder", {
-                directory: await $g.m.default_directory(),
-            });
-            if (mdir !== null) $e.mod_dir.value = mdir;
-            set_all_by_cname("d_w_chdir", "disabled", false);
-        }
-        function changed_lang() {}
-        
-        async function find_mods() {
-            set_all_by_cname("d_w_fmods", "disabled", true);
-            $mod_h.get_insert_mods($e.mod_container, $e.mod_dir.value);
-            set_all_by_cname("d_w_fmods", "disabled", false);
-        }
-        
-        // details
-        function close_details() {
-            $e.details.contentWindow.location.replace("about:blank");
-            $e.details_container.style.display = "none";
-        }
-    </script>
+    <script src="index.html.js" defer></script>
     <!-- styles -->
-    <style> /* per element */
-        #details_container {
-            display: none;
-            width: 100%;
-            text-align: center;
-        }
-        #details_close_button {
-            color: #FF0000;
-            position: absolute;
-            right: 12px;
-            transform: translateY(-2px);
-            z-index: 0;
-            transition-duration: 0.8s;
-        }
-        #details {
-            width: 99%;
-            text-align: center;
-            margin: auto;
-        }
-    </style>
-    <style> /* classes */
-        .clickable { cursor: pointer; }
-        .sneaky-button {
-            all: initial; 
-            background: none; border: none;
-            padding: 1px;
-            height: 22px; font-size: 21px;
-            text-align: center;
-        }
-        .sneaky-button:hover {
-            background: none;
-        }
-        
-        .hidden-without-child_li { display: none; }
-        .hidden-without-child_li:has(li) { display: unset; }
-        .black-outline { text-shadow: -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000, 1px 1px 0 #000000; }
-        .color-outline { text-shadow: -1px -1px 0 var(--color), 1px -1px 0 var(--color), -1px 1px 0 var(--color), 1px 1px 0 var(--color); }
-        
-        footer { opacity: 80%; width: 100%; }
-        .floaty-foot { position: fixed; bottom: 4px; }
-    </style>
-    <style> /* "label" classes (do not have any style, but here for documentation purposes) */
-        .d_u_guapi { /* disabled until GUAPI is ready */ }
-        .d_w_chdir { /* disabled while changing directory */ }
-        .d_w_fmods { /* disabled while fetching mods */ }
-    </style>
+    <link rel="stylesheet" href="./style/style.css">
+    <link rel="preload" as="image" href="https://account.vintagestory.at/public/images/background.jpg" onload="document.getElementById('force_no_bg').remove();"><!--inline:remove-->
+    <link rel="stylesheet" href="https://mods.vintagestory.at/web/css/style.css" inline-strip inline-urls>
+    <style id="force_no_bg">body{background-image:none;}</style><!--inline:remove-->
+    <link rel="stylesheet" href="./style/index.html.css">
 </head>
-<body style="width: 100%; margin: 0; padding: 0;">
-    <!-- background -->
-    <div id="background_main" style="background-color: #000000AA; margin: 0; padding: 16px;">
-    <!-- top bar-->
-    <div style="width: 100%;">
-        <div style="float: left;">
-            <button onclick="new $guapi.Window().duplicate();" style="color: #D0D0D0;" class="sneaky-button black-outline" title="[bt.new.dsc;">[sy.bt.new;</b>
-        </div><div style="float: right;">
-            <button onclick="tutorial();" style="color: #00FF00; cursor: help;" class="sneaky-button black-outline" title="[bt.tutorial.dsc;">[sy.bt.info_i;</b>
-            <button onclick="reload();" style="color: #D0D0D0;" class="sneaky-button black-outline" title="[bt.reload.dsc;">[sy.bt.reload;</b>
-        </div><br>
+<!--Attribute info:
+    - d_u_guapi: disabled until GU/API is ready
+    - d_u_lang:  disabled until lang is ready
+    - d_w_chdir: disabled while changing directory
+            // unneeded, changing dir opens up GUI that permanently takes focus from window until closed
+    - d_w_fmods: disabled while finding mods
+-->
+<body>
+    <!-- setup back/cover-ground -->
+    <div id="background"></div>
+    <div id="coverground">
+    <!-- main content -->
+    <div id="top_bar" class="outline" style="--color: #000000;">
+        <div class="bar-left">
+            <button id="bt_new_window" onclick="new_window();" title="[bt.new.dsc;" d_u_guapi disabled>[sy.bt.new;</button>
+        </div>
+        <div class="bar-right">
+            <button id="bt_tutorial" onclick="tutorial();" title="[bt.tutorial.dsc;" d_u_lang disabled>[sy.bt.info_i;</button>
+            <button id="bt_reload" onclick="reload();" title="[bt.tutorial.dsc;">[sy.bt.reload;</button>
+        </div>
     </div>
-    <!-- find and load mods -->
-    <div style="width: 100%; display: flex; flex-flow: row;">
-        <input id="mod_dir" style="width: 100%;" class="d_w_chdir" placeholder="[in.moddir.ph;"></input>
-        <button onclick="change_dir();" style="float: right;" class="d_u_guapi d_w_chdir d_w_fmods" disabled title="[bt.chdir.dsc;">[bt.chdir;</button>
-        <button onclick="find_mods();" class="d_u_guapi d_w_chdir d_w_fmods" disabled title="[bt.search.dsc;">[bt.search;</button>
-        <button onclick="" class="d_u_guapi d_w_fmods" disabled title="[bt.fetchmeta.dsc;">[bt.fetchmeta;</button>
+    <hr class="brk" style="--size: 0px;">
+    <div id="mods_dir_bar">
+        <input id="mod_dir" placeholder="[in.moddir.ph;" d_w_chdir></input>
+        <button id="bt_change_dir" onclick="change_dir();" d_u_guapi disabled title="[bt.chdir.dsc;">[bt.chdir;</button>
+        <button id="bt_find_mods" onclick="find_mods();" d_u_guapi disabled title="[bt.search.dsc;">[bt.search;</button>
+        <button id="bt_fetch_meta" onclick="fetch_meta();" d_u_guapi disabled title="[bt.fetchmeta.dsc;">[bt.fetchmeta;</button>
     </div>
-    <!-- mods -->
-    <ul id="mod_container" class="hidden-without-child_li"></ul>
-    <!-- extended mod details (from API) -->
+    <div><ul id="mod_container"></ul></div>
     <div id="details_container"><br>
-        <span id="details_close_button" class="clickable" onclick="close_details();">[sy.bt.close;</span>
+        <span id="details_close_button" onclick="close_details();">[sy.bt.close;</span>
         <iframe id="details"></iframe>
         <div id="details_handle" class="resizer-outer"><div class="resizer-inner"></div></div>
     </div>
-    <!-- footer -->
-    <br>
-    <footer id="lang_conf" class="black-outline" style="float: left; color: #D0D0D0;">[lang loading...]</footer>
-    <cite style="right: 4px; --color: #FFFFFF66; opacity: 80%;" class="color-outline floaty-foot" title="[attr.dsc;">[attr;</cite>
-    <!-- end background -->
+    <!-- end coverground -->
     </div>
+    <!-- footer -->
+    <footer id="lang_conf" class="outline">[lang loading...]</footer>
+    <cite id="cite_foot" class="outline" title="[attr.dsc;">[attr;</cite>
 </body>
 </html>
