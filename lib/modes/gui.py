@@ -158,7 +158,7 @@ def command(ns: argparse.Namespace):
         eprint('Inlining'); splash('Inlining')
         gui_dir = '{}.inlined{}'.format(*os.path.splitext(ns.gui))
         with open(gui_dir, 'w') as f:
-            f.write(smoosh(ns.gui, not ns.no_minify))
+            f.write(smoosh(ns.gui, minify=not ns.no_minify, skip_css_urls=ns.debug))
     else: gui_dir = ns.gui
     try:
         splash('Setting up GU/API')
