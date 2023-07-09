@@ -63,7 +63,6 @@ const MagicMethod = class extends (async()=>{}).constructor {
         let o = MagicMethod.convert_object(obj), can = MagicMethod.object_can_be_iterable(o);
         o._is_consumed = false;
         o[Symbol.asyncIterator] = function() {
-            console.info(o);
             if (!can)
                 throw "Supposed \"iterator\" object has neither a __next__ nor a send function!";
             let tracked = track_vals ? [] : undefined;
