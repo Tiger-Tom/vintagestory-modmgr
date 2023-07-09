@@ -116,9 +116,12 @@ class GUAPI_Base(GUAPI_Layout):
         self.hooks = hooks; self.debug = debug; self.flags = flags
     # Introspection
     @classmethod
-    def _get_exposed_methods(cls):
-        return dict(inspect.getmembers(cls, predicate=
-            lambda m: inspect.isroutine(m) and not m.__name__.startswith('_')))
+    def _get_exposed_methods(cls, *, as_iter=False):
+        members = inspect.getmembers(cls, predicate=lambda m: inspect.isroutine(m) and not m.__name__.startswith('_'))
+        return iter(members) if as_iter else dict(members)
+    def _apply_to_all(self, method: Callable):
+        for mn,m in self._get_exposed_methods(as_iter=True):
+            ...
     # Exposed base methods
     @classmethod
     def uuid(_): return str(uuid.uuid4())
@@ -415,7 +418,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
 
 class GUAPI_Mods(GUAPI_BaseMagic):
     def mods_default_directory(self): return str(self.Mod.default_mod_directory())
-    def mods_from_directory(self, path): return self._magic_iter(self.Mod.from_directory(path, hashable=True))
+    def mods_from_directory(self, path): return self._magic_iter(self.Mod.from_directory(path, serializable=True))
     def mods_get_metadatas(self, mods: tuple[dict], callback_start: str | None = None, callback_done: str | None = None, nthreads=8):
         donothing = lambda *_,**__: None
         if callback_start is not None: self.magic[callback_start](m.id)

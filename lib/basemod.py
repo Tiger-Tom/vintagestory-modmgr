@@ -58,7 +58,7 @@ class Mod(dict): # dict makes it JSON serializable
         object.__setattr__(self, i, v)
     #  From files
     @classmethod
-    def from_file(cls, file: str | Path):
+    def from_file(cls, file: str | Path, *, serializable=False):
         file = Path(file)
         if not file.exists(): raise FileNotFoundError('Cannot read from a mod that does not exist')
         if zipfile.is_zipfile(file):
@@ -72,17 +72,18 @@ class Mod(dict): # dict makes it JSON serializable
                 self = cls.from_json(**hjson.load(f))
         else: raise ValueError(f'Cannot parse mod file {file}, it is not a zip file or .cs/.json file')
         self.source = file
+        if serializable: return self.dump()
         return self
     @classmethod
-    def from_directory(cls, path: str | Path, *, hashable=False):
+    def from_directory(cls, path: str | Path, *, serializable=False):
         path = Path(path) # v very pythonic v
         for p in (lambda: (yield from path.glob('*.zip')) or (yield from path.glob('*.cs')))():
             while True:
                 try:
-                    yield (cls.from_file(p),str(p) if hashable else p)
+                    yield (cls.from_file(p, serializable=True),str(p) if serializable else p)
                     break
                 except Exception as e:
-                    if hashable:
+                    if serializable:
                         cont = yield ({
                             'exception': type(e).__name__,
                             'message': str(e),
