@@ -289,7 +289,7 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         return tuple(self.windows.keys())
     # Executing Javascript
     def win_execute(self, wid: str, js: str, store: str | None, callback: str | None) -> typing.Any:
-        '''Executes Javascript inside of the specified window, returning the result (WITHOUT resolving promises). Raises AttributeError if the window doesn't exist
+        '''Executes Javascript inside of the specified window, returning the result (WITHOUT resolving promises). Raises WindowNotFound if the window doesn't exist
 
             If store is not None, then the result (WITH resolving promises) is stored inside of the ID specified by store (overwriting existing values)
             If callback is not None, then the magic function with the ID specified in callback is called with the result (WITH resolving promises) as the first parameter'''
