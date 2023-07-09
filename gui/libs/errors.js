@@ -55,5 +55,3 @@ globalThis.addEventListener("unhandledrejection", function(e) {
         `A rejected promise wasn't handled:\n ${e.reason}\n--Stack (if present)--\n${e?.reason?.stack}`, // msg
     );
 });
-
-throw Error();
