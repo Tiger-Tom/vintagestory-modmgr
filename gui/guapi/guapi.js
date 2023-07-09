@@ -69,6 +69,30 @@ Object.assign(globalThis.$guapi, {
     },
 });
 
+// non-standard functions
+$guapi._check_sync_bridge = async function() {
+    function check(base, method, name) {
+        if (method in base) console.debug(`${method} (${name}) is synchronized with GU/API}`);
+        else
+            try { check(new base(), method, name); }
+            catch(_) { console.error(`${method} (${name}) is not synchronized with GU/API`); }
+    }
+    for (let m in $bridge) {
+        if (m.startsWith("$")) continue;
+        let base = $guapi;
+        let method = m.slice(m.indexOf("_")+1);
+        switch (m.split("_", 1)[0]) {
+            case "vars": base = $guapi.Var;break;
+            case "win": base = $guapi.Window;break;
+            case "magic": base = $guapi.Magic;break;
+            case "mods": base = $guapi.mods;break;
+            case "lock": base = $guapi.lock;break;
+            default: method = m;
+        }
+        check(base, method, m);
+    }
+};
+
 // add submodules
 $guapi._add("Var",    "V", import("./submodules/vars.js"));
 $guapi._add("Window", "W", import("./submodules/windows.js"));
