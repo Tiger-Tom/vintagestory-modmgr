@@ -7,6 +7,7 @@ import functools, multiprocessing     # optimizations
 import multiprocessing.pool
 from packaging.version import Version # compare mod versions
 import typing                         # better type hinting
+
 #</Imports
 
 #> Header >/
@@ -33,6 +34,14 @@ class Mod(dict): # dict makes it JSON serializable
         if self.name is not None: t.append(f'{self.name} [{self.id}]')
         return f'{self.name} [{self.id}] v{self.version}: {self.desc}'
     def __hash__(self): return hash((self.name, self.desc, self.id, self.version, self.source))
+    def dump(self):
+        return {
+            'name': self.name,
+            'desc': self.desc,
+            'id': self.id,
+            'version': self.raw_version,
+            'source': None if self.source is None else str(self.source),
+        }
     # Initializers
     def __init__(self, *, name: str = None, desc: str = None, id: str = None, version: Version = None, source: str | Path = None):
         if isinstance(version, str):
@@ -66,11 +75,11 @@ class Mod(dict): # dict makes it JSON serializable
         return self
     @classmethod
     def from_directory(cls, path: str | Path, *, hashable=False):
-        path = Path(path)
-        for p in path.glob('*.zip') + path.glob('*.cs'):
+        path = Path(path) # v very pythonic v
+        for p in (lambda: (yield from path.glob('*.zip')) or (yield from path.glob('*.cs')))():
             while True:
                 try:
-                    yield (cls.from_file(p),p)
+                    yield (cls.from_file(p),str(p) if hashable else p)
                     break
                 except Exception as e:
                     if hashable:

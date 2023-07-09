@@ -43,7 +43,7 @@ flag_inline_urls = 'inline-urls'
 eprint = lambda *a,**k: print('[Inliner]:', *a, file=sys.stderr, **k)
 
 def is_url(src):
-    return src.startswith('https://') or src.startswith('http://')
+    return str(src).startswith('https://') or str(src).startswith('http://')
 @functools.cache
 def _fetch(src, headers=()): return requests.get(src, headers=dict(headers))
 def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> str | bytes:

@@ -168,7 +168,7 @@ def command(ns: argparse.Namespace):
         splash('Setting up GU/API')
         ga = gpi.GUAPI(**({'mod': Mod, 'debug': ns.debug} | hook.pre_api_create())); hook.post_api_create(ga)
         splash('Creating window')
-        hook.post_window_created(webview.create_window(**({'url': gui_dir, 'js_api': ga} | hook.pre_window_created())))
+        hook.post_window_created(webview.create_window(**({'url': str(gui_dir), 'js_api': ga} | hook.pre_window_created())))
         webview.start(**{'func': hook.as_webview_start, 'debug': ns.debug, 'http_server': (ns.http_server is not None), 'http_port': ns.http_server, 'gui': ns.backend} | hook.pre_webview_start(webview))
         hook.post_webview_start(webview)
     except Exception as e: hook.uncaught_exception(e)
