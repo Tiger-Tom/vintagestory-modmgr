@@ -268,20 +268,19 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
     # Creation and Destruction
     def win_create(self, title: str, kwargs: dict[str, typing.Any] = {}) -> str:
         '''Creates a new window, generating and returning a unique UUID for it'''
-        id = self.uuid(); eprint(f'Creating window {id}')
-        self.windows[id] = self.webview.create_window(title, js_api=self, **kwargs)
-        self.windows[id].evaluate_js(f'globalThis.$wid = "{id}";')
-        return id
-    def win_close(self, id: str):
+        win = self.webview.create_window(title, js_api=self, **kwargs); eprint(f'Window {win.uid} created')
+        self.windows[win.uid] = win; win.evaluate_js(f'globalThis.$wid = "{win.uid}";')
+        return win.uid
+    def win_close(self, wid: str):
         '''Destroys a window of the given ID (proceeding regardless of whether or not it was already destroyed), then deletes it'''
-        try: self.windows[id].destroy()
+        try: self.windows[wid].destroy()
         except KeyError: pass # if the user manually destroyed it
-        del self.windows[id]
-    def win_duplicate(self, id: str) -> str:
+        del self.windows[wid]
+    def win_duplicate(self, wid: str) -> str:
         '''Creates a duplicate of the window with the given ID'''
         self.hooks.pre_dupwindow_created()
-        nid = self._win_subid_from(f'{id}:dup_')
-        self.windows[nid] = self.webview.create_window(js_api=self, **self._win_extract_data(self.windows[id]))
+        nid = self._win_subid_from(f'{wid}:dup_')
+        self.windows[nid] = self.webview.create_window(js_api=self, **self._win_extract_data(self.windows[wid]))
         self.windows[nid].evaluate_js(f'globalThis.$wid = "{nid}"')
         self.hooks.post_dupwindow_created(self.windows[nid])
         return nid
@@ -289,7 +288,7 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         '''Lists every single open window'''
         return tuple(self.windows.keys())
     # Executing Javascript
-    def win_execute(self, id: str, js: str, store: str | None, callback: str | None) -> typing.Any:
+    def win_execute(self, wid: str, js: str, store: str | None, callback: str | None) -> typing.Any:
         '''Executes Javascript inside of the specified window, returning the result (WITHOUT resolving promises). Raises AttributeError if the window doesn't exist
 
             If store is not None, then the result (WITH resolving promises) is stored inside of the ID specified by store (overwriting existing values)
@@ -298,7 +297,7 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         def cb(v):
             if store is not None: self.store[store] = v
             cb_func(v)
-        return self.windows[id].evaluate_js(js, cb)
+        return self.windows[wid].evaluate_js(js, cb)
     def win_call(self, wid: str, mid: str, *args: tuple[typing.Any]):
         '''Calls a magic Javascript function inside of the specified window, overriding whichever target ID it was created with unless the specified window ID is None
 
