@@ -30,7 +30,7 @@ bt.find_mods = async function() {
 // mods container container buttons
 bt.sort_mods = function() { $mod_h.sort($e.mod_container, "name"); };
 bt.clear_mods = function() {
-    if (!confirm("[mg.confirm.cmods;")) return;
+    if (!lconfirm("[mg.confirm.cmods;")) return;
     for (let m of [...$e.mod_container.getElementsByTagName("li")])
         m.remove();
 }
