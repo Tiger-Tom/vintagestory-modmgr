@@ -37,6 +37,11 @@ Object.assign(globalThis.$guapi, {
         async release() { return await $bridge.lock_release(this.id); }
     },
     /* submodule initialization */
+    _callable_class: function(cls) {
+        let ccls = (...args) => new cls(...args);
+        Object.setPrototypeOf(ccls, cls);
+        return ccls;
+    },
     _add: function(longname, shortname, module) {
         let _catch = promise => e => $error(
             "load_guapi_module",
@@ -47,11 +52,9 @@ Object.assign(globalThis.$guapi, {
             new Promise((resolve) => 
                 module.then(m => {
                     let df = m.default;
-                    if (df instanceof Function) {
-                        df = (...args) => new m.default(...args);
-                        Object.setPrototypeOf(df, m.default);
-                    }
-                    this[longname] = this[shortname] = df;
+                    this[longname] = this[shortname] = (df instanceof Function)
+                        ? $guapi._callable_class(df)
+                        : df;
                     if ("promises" in m)
                         Promise.all(m.promises).then(resolve).catch(_catch(true));
                     else resolve();
@@ -71,7 +74,7 @@ Object.assign(globalThis.$guapi, {
         /* dtype: one of "file", "save", or "folder" */
         return await $bridge.open_dialog(window_id, dtype, kwargs);
     },
-});
+}); $guapi.lock = $guapi._callable_class($guapi.lock);
 
 // non-standard functions
 $guapi._check_sync_bridge = async function() {
