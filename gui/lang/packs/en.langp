@@ -18,6 +18,10 @@ bt.new.dsc      = Open a new window
 bt.tutorial.dsc = Read the tutorial
 bt.reload.dsc   = Reload the page (application)
 
+bt.sortmods.dsc =
+bt.rmmods        =
+ bt.rmmods.dsc   =
+
 # inputs
 in.moddir.ph = Where the mods are
 
@@ -36,8 +40,9 @@ mg.infotutor   = Most of the time, you will want to start by setting your mod di
 mg.infotutor.2 = All of the buttons should have a longer description if you need a refresher, just hover the mouse over them to view it
 mg.infotutor.3 = Press the [sy.bt.info_i; button to view this tutorial again
 ## confirmation dialogues
-mg.confirm.rel = Are you sure you want to reload? Any unsaved changes will be lost
-mg.confirm.chl = Are you sure you want to change languages? (note: change may not fully take place before a reload)
+mg.confirm.rel   = Are you sure you want to reload? Any unsaved changes will be lost
+mg.confirm.chl   = Are you sure you want to change languages? (note: change may not fully take place before a reload)
+mg.confirm.cmods = Are you sure you want to clear all mods from the list (note: this doesn't delete any files)
 
 # misc
 attr     = Copyright (c) 2023 Shae VanCleave
