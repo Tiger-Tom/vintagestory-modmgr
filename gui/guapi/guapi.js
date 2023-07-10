@@ -46,8 +46,12 @@ Object.assign(globalThis.$guapi, {
         this._promises.push(
             new Promise((resolve) => 
                 module.then(m => {
-                    this[longname] = m.default;
-                    this[shortname] = m.default;
+                    let df = m.default;
+                    if (df instanceof Function) {
+                        df = (...args) => new m.default(...args);
+                        Object.setPrototypeOf(df, m.default);
+                    }
+                    this[longname] = this[shortname] = df;
                     if ("promises" in m)
                         Promise.all(m.promises).then(resolve).catch(_catch(true));
                     else resolve();
