@@ -139,24 +139,6 @@ class GUAPI_BaseWindows(GUAPI_Base):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.windows = CustomErrorDict(WindowNotFound, LockedDict)()
-    def _win_extract_data(self, w: webview.Window):
-        return {
-            'title': w.title,
-            'url': w.get_current_url(),
-            'height': w.height, 'width': w.width,
-            'resizable': w.resizable,
-            'fullscreen': w.fullscreen,
-            'min_size': w.min_size,
-            'hidden': w.hidden,
-            'frameless': w.frameless,
-            'easy_drag': w.easy_drag,
-            'minimized': w.minimized,
-            'on_top': w.on_top,
-            'confirm_close': w.confirm_close,
-            'background_color': w.background_color,
-            'text_select': w.text_select,
-            'transparent': w.transparent,
-        }
     def _win_subid_from(self, baseid: str) -> str:
         id = f'{baseid}%d'; add = 0
         while (id % add) in self.windows: add += 1
@@ -280,7 +262,7 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         '''Creates a duplicate of the window with the given ID'''
         self.hooks.pre_dupwindow_created()
         nid = self._win_subid_from(f'{wid}:dup_')
-        self.windows[nid] = self.webview.create_window(js_api=self, **self._win_extract_data(self.windows[wid]))
+        self.windows[nid] = self.webview.create_window(js_api=self, **self.win_info(self.windows[wid]))
         self.windows[nid].evaluate_js(f'globalThis.$wid = "{nid}"')
         self.hooks.post_dupwindow_created(self.windows[nid])
         return nid
@@ -308,6 +290,25 @@ class GUAPI_Windows(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         if not getattr(self.magic[mid], '_is_magic_js', False): raise ValueError(f'Magic function {mid} is not a magic JS function')
         return self.magic[mid](*args, _overridden_id=wid)
     # Getting information
+    def win_info(self, w: webview.Window | str):
+        if isinstance(w, str): w = self.windows[w]
+        return dict(sorted(({
+            'title': w.title,
+            'url': w.get_current_url(),
+            'height': w.height, 'width': w.width,
+            'resizable': w.resizable,
+            'fullscreen': w.fullscreen,
+            'min_size': w.min_size,
+            'hidden': w.hidden,
+            'frameless': w.frameless,
+            'easy_drag': w.easy_drag,
+            'minimized': w.minimized,
+            'on_top': w.on_top,
+            'confirm_close': w.confirm_close,
+            'background_color': w.background_color,
+            'text_select': w.text_select,
+            'transparent': w.transparent,
+        }).items(), key=lambda i: i[0]))
     def win_cookies(self, wid: str) -> ...:
         '''Gets the cookies from a window'''
         return self.windows[wid].get_cookies()

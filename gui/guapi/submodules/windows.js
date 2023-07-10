@@ -19,6 +19,7 @@ const Window = class {
     
     async get_cookies() { return await $bridge.win_cookies(this.id); }
     async get_elements() { return await $bridge.win_elements(this.id); }
+    async info() { return await $bridge.win_info(this.id); }
     
     async show() { await $bridge.win_show(this.id, true); }
     async hide() { await $bridge.win_show(this.id, false); }
