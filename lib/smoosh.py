@@ -111,11 +111,11 @@ class Inliner:
             eprint(f'Inlining JS module: {src}')
             exports = f'__export_{hex(abs(hash(src)))}'
             body = f'((async function(){{"inlined-module:{src}"; let {exports}={{}}; {self.inline_js(self.fetch(src), os.path.dirname(src))}; return {exports};}})())'
-            body = self.module_export_default.sub(rf'{exports}["default"]=\1;', f'{body}')
+            body = self.module_export_default.sub(rf'{exports}["default"]=', body)
             if self.minify: return js_minify(body)
             return body
         return _import_sub_
-    module_export_default = re.compile(r'export default ([^;]+?)(?:;|$)', re.MULTILINE)
+    module_export_default = re.compile(r'export default', re.MULTILINE)
     def inline_js(self, js, relative_base=None):
         if relative_base is None: relative_base = self.base
         js = self.import_patt.sub(self._import_sub(relative_base), js)
