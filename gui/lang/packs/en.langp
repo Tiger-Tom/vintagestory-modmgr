@@ -42,7 +42,7 @@ mg.infotutor.3 = Press the [sy.bt.info_i; button to view this tutorial again
 ## confirmation dialogues
 mg.confirm.rel   = Are you sure you want to reload? Any unsaved changes will be lost
 mg.confirm.chl   = Are you sure you want to change languages? (note: change may not fully take place before a reload)
-mg.confirm.cmods = Are you sure you want to clear all mods from the list (note: this doesn't delete any files)
+mg.confirm.cmods = Are you sure you want to clear all mods from the list? (note: this doesn't delete any files)
 
 # misc
 attr     = Copyright (c) 2023 Shae VanCleave
