@@ -38,7 +38,7 @@ Object.assign(globalThis.$guapi, {
     },
     /* submodule initialization */
     _callable_class: function(cls) {
-        let ccls = (...args) => new cls(...args);
+        let ccls = function(...args) { return new cls(...args); };
         Object.setPrototypeOf(ccls, cls);
         return ccls;
     },
