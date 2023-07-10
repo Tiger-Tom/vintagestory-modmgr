@@ -11,7 +11,7 @@ export default class {
         /* gets metadatas from mods, running magic callback_start and callback_stop for each modid */
         return await $bridge.mods_get_metadatas(mods, callback_start.toString(), callback_stop.toString());
     }
-    static async compare_verions(v0, v1) {
+    static async compare_versions(v0, v1) {
         /* compares two versions, returns 0 if they are the same, -1 if v0 < v1, or v1 if v0 > v1 */
         return await $bridge.mods_compare_versions(v0, v1);
     }
