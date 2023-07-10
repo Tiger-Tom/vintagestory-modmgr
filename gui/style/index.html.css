@@ -33,8 +33,7 @@
 }
 #mod_dir { width: 100%; }
 
-#mod_container_container { width: 100%; }
-#mod_container_container:not(:has(li)) { display: none; }
+#mod_container_container { width: 100%; display: none; }
 #bt_sort_mods { color: var(--bt-color_common); }
 
 #details_container {

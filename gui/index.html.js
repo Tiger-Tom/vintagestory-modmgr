@@ -1,5 +1,4 @@
 globalThis.bt = {};
-css_reflow = e => void(e.offsetHeight);
 
 // top bar buttons
 bt.new_window = function() {
@@ -25,7 +24,6 @@ bt.change_dir = async function() {
 bt.find_mods = async function() {
     set_all_by_attr("d_w_fmods", "disabled", true);
     $mod_h.get_insert_mods($e.mod_container, $e.mod_dir.value);
-    
     set_all_by_attr("d_w_fmods", "disabled", false);
 };
 
@@ -53,4 +51,8 @@ $g.and_dom_ready.then(async function() {
     }
     await lr; $lang.assign_config($e.lang_conf);
     if (!($guapi.debug || $guapi.f("noinitialchdir"))) bt.change_dir();
+    (new MutationObserver((r,o) => {
+        if (r.reduce((n,mr) => n+mr.addedNodes.length-mr.removedNodes.length, 0))
+            $e.mod_container_container.style.display = $e.mod_container.children.length ? "block" : "none";
+    })).observe($e.mod_container, {childList:true});
 });
