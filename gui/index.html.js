@@ -1,4 +1,5 @@
 globalThis.bt = {};
+css_reflow = e => void(e.offsetHeight);
 
 // top bar buttons
 bt.new_window = function() {
@@ -24,13 +25,14 @@ bt.change_dir = async function() {
 bt.find_mods = async function() {
     set_all_by_attr("d_w_fmods", "disabled", true);
     $mod_h.get_insert_mods($e.mod_container, $e.mod_dir.value);
+    
     set_all_by_attr("d_w_fmods", "disabled", false);
 };
 
 // mods container container buttons
 bt.sort_mods = function() { $mod_h.sort($e.mod_container, "name"); };
 bt.clear_mods = function() {
-    if (!lconfirm("[mg.confirm.cmods;")) return;
+    if (!$l.confirm("[mg.confirm.cmods;")) return;
     for (let m of [...$e.mod_container.getElementsByTagName("li")])
         m.remove();
 }
@@ -47,8 +49,8 @@ $g.and_dom_ready.then(async function() {
     set_all_by_attr("d_u_guapi", "disabled", false);
     $e.details_container.resizable_frame = new ResizableFrame($e.details, $e.details_handle, false, true, {h: [12, Infinity]});
     if (!$sto.set("message.shown.first", true)) {
-        lalert("[mg.first;"); lalert("[mg.thanks;");
+        $l.alert("[mg.first;"); $l.alert("[mg.thanks;");
     }
     await lr; $lang.assign_config($e.lang_conf);
-    if (!($guapi.debug || $guapi.f("noinitialchdir"))) change_dir();
+    if (!($guapi.debug || $guapi.f("noinitialchdir"))) bt.change_dir();
 });
