@@ -15,9 +15,9 @@ When using the CLI mode, each mode is a subcommand. The following subcommands an
 |     Subcommand     | Purpose
 | :----------------: | :------
 | [`gui`](#gui-mode)              | The default mode. Invokes [GUI mode](#gui-mode)
-| [`update`](#cli-updating-mods)  | Used to update mods in a folder
-| [`import`](#cli-importing-mods) | Used to import a `.vsmmgr` "modpack" file into a folder
-| [`export`](#cli-exporting-mods) | Used to export mods from a folder into a `.vsmmgr` "modpack" file
+| [`update`](#cli---updating-mods)  | Used to update mods in a folder
+| [`import`](#cli---importing-mods) | Used to import a `.vsmmgr` "modpack" file into a folder
+| [`export`](#cli---exporting-mods) | Used to export mods from a folder into a `.vsmmgr` "modpack" file
 
 Below, in each section, each command example will be given as `[subcommand] [...args]`. Keep in mind that the main program must be invoke -- whether through `./main.py`, `python3 main.py`, or however, so that the complete command looks something like: `./main.py [subcommand] [...args]`. 
 
