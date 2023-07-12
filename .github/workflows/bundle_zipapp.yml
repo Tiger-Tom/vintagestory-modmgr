@@ -19,7 +19,7 @@ jobs:
                 path: __main__.py
                 contents: import main;main.main()
           - name: Add Files to Zip
-            run: zip -1r vintagestory-modmgr.pyz.zip main.py gui lib *requirements.txt LICENSE
+            run: zip -1r vintagestory-modmgr.pyz.zip __main__.py main.py gui lib *requirements.txt LICENSE
           - name: Convert Zip to ZipApp
             run: python3 -m zipapp vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz -p /usr/bin/python3
           - name: Upload Build Artifact
