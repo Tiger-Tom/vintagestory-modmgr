@@ -5,6 +5,7 @@ import os, sys
 import shutil
 import argparse
 from lib import basemod
+from lib import bundle_compat
 #</Imports
 
 #> Header >/
@@ -15,11 +16,19 @@ def add_arguments(parser: argparse.ArgumentParser):
 def command(ns: argparse.Namespace):
     print(sys.version)
     print(f'{os.name}: {" ".join(getattr(os, "uname", lambda: ("{{could", "not", "get", "uname}}"))())}')
-    print(f'frozen? {getattr(sys, "frozen", False)}')
+    print(f'bundle info: {bundle_compat}')
+    print(f' - loader: {ns._globals["__loader__"]}')
+    print(f' - real BundleablePath: {bundle_compat.BundleablePath.real()}')
+    print( ' - attrs:')
+    if za := bundle_compat.bundle.zipapp_attrs:
+        print(f'   - zipapp temp dir: {za.temp_directory}')
+        print(f'   - zipapp archive: {za.archive_path}')
+        print(f'   - zipapp populated tops: {za.populated_tops}')
+    if fa := bundle_compat.bundle.frozen_attrs:
+        print(f'   - frozen data dir: {fa.data_dir}')
     print( 'paths:')
     print(f'- cwd={os.getcwd()}')
-    print(f'- _MEIPASS={getattr(sys, "_MEIPASS", "{{not set}}")}')
-    print( '- source: {ns._globals["__file__"]}:')
+    print(f'- source: {ns._globals["__file__"]}:')
     print(f'  - basemod module source: {basemod.__file__}')
     print(f'  - update module source: {ns._globals["update"].__file__}')
     print(f'  - import/export module source: {ns._globals["impexp"].__file__}')
@@ -27,9 +36,8 @@ def command(ns: argparse.Namespace):
     print(f'  - debug module source: {ns._globals["debug"].__file__}')
     print(f'- Builtin GUI dir: {ns._globals["gui"].builtin_gui_dir}')
     print(f'  - Has builtin GUI (dir exists): {ns._globals["gui"].has_builtin_gui}')
-    print(f'  - GUI in frozed mode: {ns._globals["gui"].am_frozed}')
     print(f'  - GUI WebView: {ns._globals["gui"].webview}')
-    print(f'  - GUI GU/API: {ns._globals["gui"].guapi}')
+    print(f'  - GUI (builtin) GU/API: {ns._globals["gui"].guapi}')
     print(f'  - GUI PyInstaller Splash: {getattr(ns._globals["gui"], "pyi_splash", "{{not loaded}}")}')
 
     if ns.tree is not None:
