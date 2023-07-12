@@ -23,8 +23,7 @@ def _pyi_splash(text_or_cmd: str | bool) -> bool | Exception:
 import sys, os                  # basic system libraries
 import importlib.machinery      # import GU/API modules
 import argparse                 # argument parsing
-from importlib import resources # ZipApp resources
-from pathlib import Path        # fancy path manipulation
+import pathlib                  # fancy path manipulation
 try: import webview             # HTML/CSS/JS GUI
 except Exception as e: webview = e
 try:
@@ -36,23 +35,23 @@ try:
 except Exception as e: guapi = e
 from lib.basemod import Mod
 from lib.smoosh import smoosh
+from lib.bundle_compat import BundleablePath,bundle
 #</Imports
 
 #> Setup
 eprint = lambda *a, **kw: print(*a, **kw, file=sys.stderr)
 
-am_frozed = getattr(sys, 'frozen', False)
-builtin_gui_dir = resources.files('gui').joinpath('index.html') if not am_frozed else Path(sys._MEIPASS, 'gui', 'index.html')
+builtin_gui_dir = BundleablePath('gui', 'index.html')
 has_builtin_gui = builtin_gui_dir.exists()
 #</Setup
 
 #> Base Hooks
 class BaseHook:
-    __slots__ = ('ns', 'frozen', 'splash', 'Mod', 'guapi', 'webview')
-    def __init__(self, ns: argparse.Namespace, is_frozen: bool, splash=splash):
-        self.ns = ns; self.Mod = Mod; self.frozen = is_frozen
+    __slots__ = ('ns', 'bundle', 'splash', 'Mod', 'guapi', 'webview')
+    def __init__(self, ns: argparse.Namespace, splash=splash):
+        self.ns = ns; self.Mod = Mod; self.bundle = bundle
         self.guapi = None; self.window = None; self.webview = None
-        eprint(f'Hook instantiated; frozen?: {is_frozen}'); self.splash = splash
+        eprint('Hook instantiated'); self.splash = splash
         self.splash('Hooks have been set up and will take control of splashes')
     def pre_api_create(self):
         '''called before the GU/API, returns kwargs for GUAPI.__init__'''
@@ -101,7 +100,7 @@ class BaseHook:
 #> Header >/
 if os.name == 'nt': cache_err = 'you are running Windows'
 else:
-    cache_dir_base = Path('~/.cache/', Path(sys.argv[0]).name).expanduser()
+    cache_dir_base = pathlib.Path('~/.cache/', pathlib.Path(sys.argv[0]).name).expanduser()
     if (cache_dir_base / 'CacheStorage').exists() and (cache_dir_base / 'WebKitCache').exists():
         cache_err = False
     else: cache_err = f'{cache_dir_base} does not appear to exist'
@@ -111,8 +110,8 @@ def add_arguments(p: argparse.ArgumentParser):
         p.description = 'GUI mode cannot be used without webview. Try `pip install webview` or otherwise installing python-pywebview?'
         return
     if has_builtin_gui:
-        p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, type=Path, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
-    else: p.add_argument('-g', '--gui', metavar='path', required=True, type=Path, help='The GUI file (or URI) to serve')
+        p.add_argument('-g', '--gui', metavar='path', default=builtin_gui_dir, type=pathlib.Path, help='The GUI file (or URI) to serve, defaults to the stored GUI in a bundled executable or the builtin GUI at gui/index.html')
+    else: p.add_argument('-g', '--gui', metavar='path', required=True, type=pathlib.Path, help='The GUI file (or URI) to serve')
     p.add_argument('-s', '--http-server', metavar='port', default=False, type=int, help='If provided, the web GUI and API will be served on a local HTTP server at the port (not recommended due to security concerns)')
     p.add_argument('-d', '--debug', action='store_true', help='Start PyWebView with debug=True, opening/enabling inspect tools and JS console')
     if not cache_err: p.add_argument('--clear-cache', action='store_true', help=f'Tries to clear the cache by removing {cache_dir_base}')
@@ -139,8 +138,8 @@ def command(ns: argparse.Namespace):
         eprint('Cannot execute GUI, Python WebView does not appear to have been installed or properly loaded:'); eprint(webview)
         splash('Python WebView was not installed or properly loaded'); exit(2)
     if not ns.gui.exists():
-        eprint(f'{ns.gui} does not exist, can not continue')
-        splash(f'{ns.gui} does not exist, can not continue'); exit(1)
+        eprint(f'{ns.gui!s} does not exist, can not continue')
+        splash(f'{ns.gui!s} does not exist, can not continue'); exit(1)
     # Get GU/API
     splash('Loading GU/API')
     if ns.guapi is None:
@@ -157,7 +156,7 @@ def command(ns: argparse.Namespace):
             eprint(f'Cannot get GU/API module from {ns.guapi}:'); eprint(e)
             splash(f'External GU/API {ns.guapi} could not be loaded'); exit(1)
     splash('Setting up hooks')
-    if hasattr(gpi, 'hook_factory'): hook = gpi.hook_factory(BaseHook)(ns, am_frozed, splash)
+    if hasattr(gpi, 'hook_factory'): hook = gpi.hook_factory(BaseHook)(ns, splash)
     else: hook = BaseHook(ns, am_frozed)
     if not ns.no_inline:
         eprint('Inlining'); splash('Inlining')
