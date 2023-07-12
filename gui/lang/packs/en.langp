@@ -19,8 +19,7 @@ bt.tutorial.dsc = Read the tutorial
 bt.reload.dsc   = Reload the page (application)
 
 bt.sortmods.dsc = Sort the mods in name-order, A-Z
-bt.rmmods       = Clear
- bt.rmmods.dsc  = Clear the modlist (does not delete mods from the drive until changes are applied!)
+bt.rmmods.dsc   = Clear the modlist (does not delete mods from the drive until changes are applied!)
 
 # inputs
 in.moddir.ph = Where the mods are
