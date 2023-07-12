@@ -34,6 +34,7 @@
 #mod_dir { width: 100%; }
 
 #mod_container_container { width: 100%; display: none; }
+#mod_container { list-style-type: none; }
 #bt_sort_mods { color: var(--bt-color_common); }
 
 #details_container {
@@ -80,4 +81,9 @@
     --size: 1lh;
     width: 100%; height: var(--size);
     border: 0 transparent; opacity: 0%;
+}
+.mod-element {}
+.mod-element-remove-button {
+    cursor: pointer;
+    position: relative; right: 4px;
 }

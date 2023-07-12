@@ -1,5 +1,13 @@
 globalThis.$mod_h = {
     /* elements */
+    _element_rm_bt(elem) {
+        let bt = document.createElement("span");
+        bt.classList.add("mod-element-remove-button");
+        bt.onclick = elem.remove.bind(elem);
+        bt.title = $l("[bt.modelem.rm.dsc;");
+        bt.textContent = $l("[sy.bt.close;");
+        return bt;
+    },
     element(mod, version=true) {
         let li = document.createElement("li"),
             id = $mod_h.format(mod, "mod:%id%");
@@ -7,6 +15,7 @@ globalThis.$mod_h = {
         li.id = id; li._mod = mod;
         li.textContent = $mod_h.format(mod, version ? $l("[mf.content.withversion;") : $l("[mf.content.withoutvers;"));
         li.title = $mod_h.format(mod, $l("[mf.tooltip;"));
+        li.prepend($mod_h._element_rm_bt(li));
         return li;
     },
     apply_description(elem, desc, desc_frame) {
