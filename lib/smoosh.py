@@ -5,6 +5,7 @@ import os,sys
 import re; import base64
 import requests; import mimetypes
 import functools
+import pathlib, tempfile
 #</Imports
 
 #> Minifier
@@ -44,15 +45,42 @@ eprint = lambda *a,**k: print('[Inliner]:', *a, file=sys.stderr, **k)
 
 def is_url(src):
     return str(src).startswith('https://') or str(src).startswith('http://')
+def _cache(name, tofetch):
+    cache = pathlib.Path(tempfile.gettempdir(), '.vintagestory-modmgr_cache', base64.b32encode(name.encode()).decode())
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        if cache.exists():
+            eprint(f'Getting {name} from {cache}')
+            val = cache.read_bytes()
+        else:
+            eprint(f'Saving {name} to {cache}')
+            val = tofetch()
+            cache.write_bytes(val)
+        return val
+    except Exception as e: eprint(f'Cache error: {e}')
+    return tofetch()
 @functools.cache
-def _fetch(src, headers=()): return requests.get(src, headers=dict(headers))
+def _fetch(src, headers=()):
+    cache = pathlib.Path(tempfile.gettempdir(), '.vintagestory-modmgr_cache', base64.b32encode(src.encode()).decode())
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        if cache.exists():
+            eprint(f'Getting {src} from {cache}')
+            val = cache.read_bytes()
+        else:
+            eprint(f'Saving {src} to {cache}')
+            val = requests.get(src, headers=dict(headers)).content
+            cache.write_bytes(val)
+        return val
+    except Exception as e: eprint(f'Cache error: {e}')
+    return _cache(src, lambda: requests.get(src, headers=dict(headers)).content)
 def fetch(src, base='', *, text=True, headers={'accept-encoding': 'gzip'}) -> str | bytes:
     if is_url(base) and not is_url(src): src = requests.compat.urljoin(base, src)
     if is_url(src):
         eprint(f'Fetching remote {src}')
         r = _fetch(src, headers=tuple(headers.items()))
-        if text: return r.text
-        else: return r.content
+        if text: return r.decode()
+        else: return r
     src = os.path.join(base, src)
     eprint(f'Fetching local {src}')
     with open(src, f'r{"" if text else "b"}') as f: return f.read()
@@ -139,3 +167,7 @@ class Inliner:
 #> Main >/
 def smoosh(path, minify, skip_css_urls):
     return Inliner(os.path.dirname(path), minify=minify, skip_css_urls=skip_css_urls).inline_html(fetch(str(path)))
+    #return _cache(
+    #    f'{path}:inlined,minify={minify},skip_css_urls={skip_css_urls}',
+    #    lambda: Inliner(os.path.dirname(path), minify=minify, skip_css_urls=skip_css_urls).inline_html(fetch(str(path))).encode()
+    #).decode()
