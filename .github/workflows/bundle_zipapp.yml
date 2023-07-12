@@ -1,0 +1,34 @@
+name: Bundle into ZipApp
+on: workflow_dispatch
+
+jobs:
+    build-zipapp:
+        name: Build ZipApp
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-python@v4
+            with:
+                python-version: '3.12'
+                cache: pip
+          - name: Install requirements
+            run: pip install -r requirements.txt
+          - name: Create entrypoint __main__.py
+            uses: DamianReeves/write-file-action@v1.2
+            with:
+                path: __main__.py
+                contents: import main;main.main()
+          - name: Add Files to Zip
+            run: zip -1r vintagestory-modmgr.pyz.zip main.py gui lib *requirements.txt LICENSE
+          - name: Convert Zip to ZipApp
+            run: python3 -m zipapp vintagestory-modmgr.pyz.zip -o vintagestory-modmgr.pyz -p /usr/bin/python3
+          - name: Upload Build Artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: Cross-Platform ZipApp (requires a Python interpreter)
+                path: vintagestory-modmgr.pyz
+            # Testing
+          - name: Test --help
+            run: python3 vintagestory-modmgr.pyz --help
+          - name: Test debug
+            run: python3 vintagestory-modmgr.pyz debug

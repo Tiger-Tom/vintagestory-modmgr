@@ -1,0 +1,57 @@
+name: Bundle with PyInstaller for Windows and MacOS
+on: workflow_dispatch
+
+env:
+    PYTHON_OPTIMIZE: 2
+    bundle_common: 'main.py --onefile --log-level ERROR'
+    bundle_sans: '--hidden-import webview --console'
+    bundle_avec: '--windowed'
+
+jobs:
+    bundle-executable:
+        strategy:
+            fail-fast: false
+            matrix:
+                os:
+                  - {name: 'windows-latest', title: 'Windows', exec: 'vintagestory-modmgr{0}.exe', id: 'w',
+                        sans_gui: '',
+                        avec_gui: '--add-data gui/`;gui --splash ./icons/vintagestory-modmgr_splash.png --icon ./icons/vintagestory-modmgr_icon.ico'}
+                  - {name: 'macos-latest',   title: 'MacOS',   exec: 'vintagestory-modmgr{0}',     id: 'm',
+                        sans_gui: '--strip',
+                        avec_gui: '--strip --add-data gui/:gui --icon ./icons/vintagestory-modmgr_icon.icns'}
+        name: Bundle Executable for ${{ matrix.os.title }} with PyInstaller
+        runs-on: ${{ matrix.os.name }}
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-python@v4
+            with:
+                python-version: '3.12'
+            # Install required libraries
+          - name: Install UPX (Windows only)
+            if: matrix.os.id == 'w'
+            uses: crazy-max/ghaction-upx@v2
+            with:
+                install-only: true
+          - name: Install PyInstaller
+            run: pip install -U pyinstaller pyinstaller-hooks-contrib
+          - name: Install Requirements
+            run: pip install -r requirements.txt
+            # Build Sans GUI
+          - name: Bundle for ${{ matrix.os.title }} Sans GUI
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_sans }} ${{ matrix.os.sans_gui }} --name ${{ format(matrix.os.exec, '') }}
+            # Build Avec GUI
+          - name: Install Optional Requirements
+            run: pip install -r optional-requirements.txt
+          - name: Bundle for ${{ matrix.os.title }} Avec GUI
+            run: pyinstaller ${{ env.bundle_common }} ${{ env.bundle_avec }} ${{ matrix.os.avec_gui }} --name ${{ format(matrix.os.exec, '-gui') }}
+            # Upload Artifacts
+          - name: Upload Bundled Executable for ${{ matrix.os.title }}, Sans GUI
+            uses: actions/upload-artifact@v3
+            with:
+                name: ${{ matrix.os.title }} Bundle (Sans GUI)
+                path: dist/${{ format(matrix.os.exec, '') }}
+          - name: Upload Bundled Executable for ${{ matrix.os.title }}, Avec GUI
+            uses: actions/upload-artifact@v3
+            with:
+                name: ${{ matrix.os.title }} Bundle (Avec GUI)
+                path: dist/${{ format(matrix.os.exec, '-gui') }}
