@@ -418,6 +418,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         except AttributeError: return {'type': None}
 
 class GUAPI_Mods(GUAPI_BaseMagic):
+    __slots__ = ()
     def mods_default_directory(self): return str(self.Mod.default_mod_directory())
     def mods_from_directory(self, path): return self._magic_iter(self.Mod.from_directory(path, serializable=True))
     def mods_get_metadatas(self, mods: tuple[dict], callback_start: str | None = None, callback_done: str | None = None, nthreads=8):
@@ -448,6 +449,7 @@ class GUAPI_Lock(GUAPI_Base):
 
 #> GU/API >/
 class GUAPI(GUAPI_Lock, GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base):
+    __slots__ = ()
     # Directory / file manipulation
     dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
     def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
