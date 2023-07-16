@@ -50,7 +50,10 @@ $g.and_dom_ready.then(async function() {
         $l.alert("[mg.first;"); $l.alert("[mg.thanks;");
     }
     await lr; $lang.assign_config($e.lang_conf);
-    if (!($guapi.debug || $guapi.f("noinitialchdir"))) bt.change_dir();
+    if ($guapi.f("autostart")) {
+        $e.mod_dir.value = await $g.m.default_directory();
+        bt.find_mods();
+    } else if (!($g.debug || $g.f("noinitialchdir"))) bt.change_dir();
     (new MutationObserver((r,o) => {
         if (r.reduce((n,mr) => n+mr.addedNodes.length-mr.removedNodes.length, 0))
             $e.mod_container_container.style.display = $e.mod_container.children.length ? "block" : "none";
