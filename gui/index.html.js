@@ -1,16 +1,12 @@
 globalThis.bt = {};
 
 // top bar buttons
-bt.new_window = function() {
-    new $guapi.Window().duplicate();
-};
+bt.new_window = () => new $guapi.Window().duplicate();
 bt.tutorial = function() {
     for (let m of ["thanks", "infotutor", "infotutor.2", "infotutor.3"])
         $l.alert(`[mg.${m};`);
 };
-bt.reload = function() {
-    if ($l.confirm("[mg.confirm.rel;")) location.reload();
-};
+bt.reload = () => { if ($l.confirm("[mg.confirm.rel;")) location.reload(); };
 
 // mods-dir bar buttons
 bt.change_dir = async function() {
@@ -28,8 +24,8 @@ bt.find_mods = async function() {
 };
 
 // mods container container buttons
-bt.sort_mods = function() { $mod_h.sort($e.mod_container, "name", false); };
-bt.sort_mods.reversed = function(e) { e.preventDefault(); $mod_h.sort($e.mod_container, "name", true); }
+bt.sort_mods = () => $mod_h.sort($e.mod_container, "name", false);
+bt.sort_mods.reversed = (e) => { e.preventDefault(); $mod_h.sort($e.mod_container, "name", true); };
 
 bt.clear_mods = function() {
     if (!$l.confirm("[mg.confirm.cmods;")) return;
