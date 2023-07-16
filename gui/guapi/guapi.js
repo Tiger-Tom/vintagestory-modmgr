@@ -71,7 +71,6 @@ Object.assign(globalThis.$guapi, {
     /** functions **/
     uuid: async () => await $bridge.uuid(),
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
-        /* dtype: one of "file", "save", or "folder" */
         return await $bridge.open_dialog(window_id, dtype, kwargs);
     },
 }); $guapi.lock = $guapi._callable_class($guapi.lock);
