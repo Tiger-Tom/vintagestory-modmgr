@@ -15,9 +15,9 @@ $error._ask_copy_to_clipboard = async function(text) {
 };
 $error._remove_own_base = url => url?.startsWith(location.origin) ? url.slice(location.origin.length) : url;
 
-$error.code_from_event = e => $error.code_from_error(e?.error || e?.reason);
+$error.code_from_event = e => $error.code_from_error(e?.error ?? e?.reason);
 $error.code_from_error = e => $error._error_is_error(e)
-    ? `${e?.sourceURL && $error._remove_own_base(e?.sourceURL) || "source?"}#L${e?.line || "_"}C${e?.column || "_"}:${e?.name}`
+    ? `${e?.sourceURL && $error._remove_own_base(e?.sourceURL) || "source?"}#L${e?.line ?? "_"}C${e?.column ?? "_"}:${e?.name}`
     : `?unknown_type=${e?.constructor?.name}`;
 
 $error._behavior_handlers = {

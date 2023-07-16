@@ -7,6 +7,8 @@ _pack.credit = Original English Language Pack By Shae
 _config.passes = 2
 
 # buttons
+bt.lang = [sy.lang;
+
 bt.chdir          = Change
  bt.chdir.dsc     = Change the selected directory
 bt.search         = Sync
@@ -14,20 +16,28 @@ bt.search         = Sync
 bt.fetchmeta      = Fetch
  bt.fetchmeta.dsc = Gets the upstream metadata for every mod in the list, including available versions, longer descriptions, and icons/images
 
-bt.new.dsc      = Open a new window
-bt.tutorial.dsc = Read the tutorial
-bt.reload.dsc   = Reload the page (application)
+bt.new           = [sy.winplus;
+ bt.new.dsc      = Open a new window
+bt.tutorial      = [sy.info_i;
+ bt.tutorial.dsc = Read the tutorial
+bt.reload        = [sy.reload;
+ bt.reload.dsc   = Reload the page (application)
 
-bt.sortmods.dsc = Sort the mods in name-order, A-Z
-bt.rmmods.dsc   = Clear the modlist (does not delete mods from the drive until changes are applied!)
+bt.sortmods      = [sy.sort;
+ bt.sortmods.dsc = Sort the mods in name-order, A-Z
+bt.rmmods        = [sy.trash;
+ bt.rmmods.dsc   = Clear the modlist (does not delete mods from the drive until changes are applied!)
 
-bt.modelem.rm.dsc = Remove this mod from the list
+bt.modelem.rm      = [sy.close;
+ bt.modelem.rm.dsc = Remove this mod from the list
+
+bt.details.close = [sy.close;
 
 # inputs
 in.moddir.ph = Where the mods are
 
 # messages
-mg.first       = Press the [sy.bt.info_i; button for information on how to use this software
+mg.first       = Press the [bt.tutorial; button for information on how to use this software
 mg.thanks      = Thanks for trying out the program! As with any new software written for a small community, I'm always \ 
                  on the lookout for things to improve, whether that be bugs to squash or features to add, please don't \ 
                  hesitate to make requests in the form of a Discord message to @shae1881 or a GitHub issue at the page \ 
@@ -35,11 +45,11 @@ mg.thanks      = Thanks for trying out the program! As with any new software wri
 ## tutorial
 mg.infotutor   = Most of the time, you will want to start by setting your mod directory. When you start the program, there   \ 
                  should be a window asking you to set your mod directory, but you can always change that by pressing the     \ 
-                 [bt.chdir; button. Then, you load the list of mods from that directory by pressing the [bt.search;  \ 
+                 [bt.chdir; button. Then, you load the list of mods from that directory by pressing the [bt.search;          \ 
                  button. This should get you started with the bare minimum. In order to view expanded descriptions, updates, \ 
                  and more, you should press the [bt.fetchmeta; button.
 mg.infotutor.2 = All of the buttons should have a longer description if you need a refresher, just hover the mouse over them to view it
-mg.infotutor.3 = Press the [sy.bt.info_i; button to view this tutorial again
+mg.infotutor.3 = Press the [bt.tutorial; button to view this tutorial again
 ## confirmation dialogues
 mg.confirm.rel   = Are you sure you want to reload? Any unsaved changes will be lost
 mg.confirm.chl   = Are you sure you want to change languages? (note: change may not fully take place before a reload)

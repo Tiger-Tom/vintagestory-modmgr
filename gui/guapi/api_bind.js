@@ -2,7 +2,7 @@
     This allows potential future migration to different APIs
 */
 
-globalThis.$wid = globalThis.$wid ||
+globalThis.$wid ??=
     ((location.href === "about:blank") ?
         null : (location.search === "") ?
             "main" : location.search.substring(1));

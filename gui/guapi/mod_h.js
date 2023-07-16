@@ -65,7 +65,7 @@ globalThis.$mod_h = {
         let nf = { ...default_on_not_found, ...on_not_found, };
         while (str.search(scan_patt) !== -1)
             str = str.replaceAll(scan_patt, (m, k, o, s) => nf.hasOwnProperty(k)
-                ? (mod[k] === null || mod[k] === undefined) ? nf[k] : mod[k]
+                ? (mod[k] ?? nf[k])
                 : ($error("formatting_mod", m, `Bad f-string element "${m}" in "${s}"`) || `%%${m}%%`));
         return str.replaceAll("%%", "%"); // allow escapes with %%
     },

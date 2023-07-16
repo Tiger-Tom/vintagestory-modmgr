@@ -1,7 +1,7 @@
-sy.bt.lang   = 🌐
-sy.bt.info_i = ⓘ
-sy.bt.new    = ⮺⁺
-sy.bt.reload = 🗘
-sy.bt.close  = ✖
-sy.bt.sort   = ⇅
-sy.bt.rmmods = 🗑
+sy.lang    = 🌐
+sy.info_i  = ⓘ
+sy.winplus = ⮺⁺
+sy.reload  = 🗘
+sy.close   = ✖
+sy.sort    = ⇅
+sy.trash   = 🗑

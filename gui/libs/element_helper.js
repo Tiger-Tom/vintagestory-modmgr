@@ -8,7 +8,7 @@ globalThis.set_all_by_attr = function(attr, key, value) {
 globalThis.$e = id => document.getElementById(id);
 $e._load = function(el) {
     for (let e of el.children) {
-        if (e.id && !e.id.startsWith("_")) $e[e.id] = e;
+        if (!e.id?.startsWith("_")) $e[e.id] = e;
         if (e.hasChildNodes()) $e._load(e);
     }
 };

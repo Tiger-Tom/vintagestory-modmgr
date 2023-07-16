@@ -1,8 +1,7 @@
 globalThis.$sto = {
     get: function(key, deflt=undefined) {
         let v = globalThis.localStorage?.getItem(key);
-        if (v === null ) return deflt;
-        return v;
+        return v ?? deflt;
     },
     set: function(key, val) {
         let v = $sto.get(key);

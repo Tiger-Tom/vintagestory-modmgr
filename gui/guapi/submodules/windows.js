@@ -1,5 +1,5 @@
 const Window = class {
-    constructor(id=undefined) { this.id = id || $wid; }
+    constructor(id=undefined) { this.id = id ?? $wid; }
     toString() { return this.id; }
     static async create(title, kwargs={}) { return new Window(await $bridge.win_create(title, kwargs)); }
     async close() { await $bridge.win_close(this.id); }

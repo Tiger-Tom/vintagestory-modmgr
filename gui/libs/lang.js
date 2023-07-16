@@ -88,7 +88,7 @@ $lang.load = async function(lang, resetflags=true, already_fetched=false) {
         let o = $l,
             ks = key.split($lang.key_split_char);
         for (let k in ks)
-            o = (o[ks[k]] = o[ks[k]] || {
+            o = (o[ks[k]] ??= {
                 toString: $lang._trans_subobject_toString,
                 /*k is a string for some reason... probably a "key", not an index?*/
                 $INDEX: ks.slice(0, ++k).join($lang.key_split_char),
@@ -148,18 +148,18 @@ $lang.apply = async function(elem=document.body) {
         if ((elem[field] === undefined) || (elem[field] === "")) return;
         let n = $l(elem[field]);
         if (n === elem[field]) return;
-        elem[$lang.backup_attr] = elem[$lang.backup_attr] || {};
+        elem[$lang.backup_attr] ??= {};
         if (elem[$lang.backup_attr][field] === undefined)
             elem[$lang.backup_attr][field] = elem[field];
         elem[field] = n; elem.classList.add($lang.mutated_class);
     }
-    let p = Promise.all(Array.from(elem.children || []).map($lang.apply));
-    for (let r = 0; r < ($lc("passes") || 1); r++)
+    let p = Promise.all(Array.from(elem.children ?? []).map($lang.apply));
+    for (let r = 0; r < ($lc("passes") ?? 1); r++)
         $lang.fields_lenient.forEach(f => mutate_field(elem, f));
     if (elem.children.length) {
         await p; return;
     }
-    for (let r = 0; r < ($lc("passes") || 1); r++)
+    for (let r = 0; r < ($lc("passes") ?? 1); r++)
         $lang.fields_strict.forEach(f => mutate_field(elem, f));
     await p;
 };
@@ -172,18 +172,18 @@ $lang.strip = async function(elem=document.body, recurse=true) {
     }
     await _strip(elem);
     if (recurse)
-        await Promise.all(Array.from(elem.getElementsByClassName($lang.mutated_class) || []).map(_strip));
+        await Promise.all(Array.from(elem.getElementsByClassName($lang.mutated_class) ?? []).map(_strip));
 };
 // config elements
 $lang.assign_config = function(elem) {
-    let id = `lang_config_${elem.id || ""}:`;
+    let id = `lang_config_${elem.id ?? ""}:`;
     elem.innerHTML = "";
     let sel = elem.appendChild(document.createElement("select"));
     sel.style.float = "left"; sel.id = id+"selection";
     for (let lp in $lang.packs) {
         let o = document.createElement("option");
         o.selected = lp === $l._pack.id.toString();
-        o.value = lp; o.innerText = `${o.selected ? $l("[sy.bt.lang; ") : ""}[${lp}] ${$lang.packs[lp].name}`;
+        o.value = lp; o.innerText = `${o.selected ? $l("[bt.lang; ") : ""}[${lp}] ${$lang.packs[lp].name}`;
         sel.appendChild(o);
     }
     sel.onchange = async function() {
