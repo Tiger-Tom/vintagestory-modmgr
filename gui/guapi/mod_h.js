@@ -5,7 +5,7 @@ globalThis.$mod_h = {
         bt.classList.add("mod-element-remove-button");
         bt.onclick = elem.remove.bind(elem);
         bt.title = $l("[bt.modelem.rm.dsc;");
-        bt.textContent = $l("[sy.bt.close;");
+        bt.textContent = $l("[bt.modelem.rm;");
         return bt;
     },
     element(mod, version=true) {
@@ -21,7 +21,8 @@ globalThis.$mod_h = {
     apply_description(elem, desc, desc_frame) {
         elem._desc = desc;
         let a = document.createElement("a");
-        a.textContent = $l("[sy.generic.info_i;");
+        a.textContent = $l("[bt.modelem.details;");
+        a.title = $l("[bt.modelem.details.dsc;");
         elem.insertBefore(a, elem.firstChild);
         a.onclick = function() {
             desc_frame.contentDocument.body.innerHTML = desc;

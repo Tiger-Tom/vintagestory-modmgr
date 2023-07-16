@@ -28,8 +28,10 @@ bt.sortmods      = [sy.sort;
 bt.rmmods        = [sy.trash;
  bt.rmmods.dsc   = Clear the modlist (does not delete mods from the drive until changes are applied!)
 
-bt.modelem.rm      = [sy.close;
- bt.modelem.rm.dsc = Remove this mod from the list
+bt.modelem.rm           = [sy.close;
+ bt.modelem.rm.dsc      = Remove this mod from the list
+bt.modelem.details      = [sy.info_i;
+ bt.modelem.details.dsc = Show more information from the ModDB page
 
 bt.details.close = [sy.close;
 
