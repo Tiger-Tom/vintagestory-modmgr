@@ -115,7 +115,7 @@ Promise.all($guapi._promises).then(async function() {
     $g.flags = new Set(await $bridge.get_flags()); $g.f = $g.flag;
     $g.debug = !$g.f("ignoreguidebug") && await $bridge.is_debug();
     if (!$g.f("nodebug") && ($g.f("debug") || $g.debug)) {
-        let ifr = document.createElement("iframe"); ifr.src = "./guapi/debug.html";
+        let ifr = document.createElement("iframe"); ifr.src = "/guapi/debug.html";
         document.body.appendChild(ifr); document.body.insertBefore(ifr, document.body.firstChild);
         ifr.addEventListener("load", function() {
             ifr.style.height = ifr.contentDocument.documentElement.scrollHeight+"px";
