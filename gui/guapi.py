@@ -107,6 +107,7 @@ class GUAPI_Layout:
         'store',                                      # Variables
         'windows',                                    # Windows
         'magic', #'magic_claimed',                    # Magic
+        'locks',                                      # Lock
     )
 class GUAPI_Base(GUAPI_Layout):
     __slots__ = ()
@@ -429,18 +430,12 @@ class GUAPI_Mods(GUAPI_BaseMagic):
     def mods_compare_versions(_, v0: str, v1: str) -> int:
         v0, v1 = packaging.version.parse(v0), packaging.version.parse(v1)
         return 0 if v0 == v1 else 1 if v0 > v1 else -1
-#</Higher-Level Exposed Methods
 
-#> GU/API >/
-class GUAPI(GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base):
-    __slots__ = ('locks',)
+class GUAPI_Lock(GUAPI_Base):
+    __slots__ = ()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.locks = LockedSet()
-    # Directory / file manipulation
-    dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
-    def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
-        return self.windows[wid].create_file_dialog(getattr(self.webview, self.dialog_types[dtype]), **kwargs)
     def lock_obtain(self, name: str) -> bool:
         if name in self.locks: return False
         self.locks.add(name); return True
@@ -449,3 +444,11 @@ class GUAPI(GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base)
     def lock_release(self, name: str) -> bool:
         if name not in self.locks: return False
         self.locks.remove(name); return True
+#</Higher-Level Exposed Methods
+
+#> GU/API >/
+class GUAPI(GUAPI_Lock, GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base):
+    # Directory / file manipulation
+    dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
+    def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
+        return self.windows[wid].create_file_dialog(getattr(self.webview, self.dialog_types[dtype]), **kwargs)

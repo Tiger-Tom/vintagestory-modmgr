@@ -19,23 +19,7 @@ Object.assign(globalThis.$guapi, {
     Window: null, W: null,
     Magic: null,  M: null,
     mods: null,   m: null,
-    lock: class {
-        constructor(id) { this.id = name; }
-        async is_set() { return await $bridge.lock_is_set(this.id); }
-        obtain(wait=5) {
-            /* if wait is truthy, then we return a promise and check every {wait} seconds if the lock is available */
-            /* otherwise, returns a promise that contains a boolean of whether or not we obtained the lock */
-            if (!wait) return $bridge.lock_obtain(this.id);
-            return new Promise(resolve => {
-                async function check_for_obtain_lock() {
-                    if (await $bridge.lock_obtain(id)) resolve();
-                    else setTimeout(check_for_obtain_lock, wait*1000);
-                }
-                check_for_obtain_lock();
-            });
-        }
-        async release() { return await $bridge.lock_release(this.id); }
-    },
+    Lock: null,   L: null,
     /* submodule initialization */
     _callable_class: function(cls) {
         let ccls = function(...args) { return new cls(...args); };
@@ -73,7 +57,7 @@ Object.assign(globalThis.$guapi, {
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
         return await $bridge.open_dialog(window_id, dtype, kwargs);
     },
-}); $guapi.lock = $guapi._callable_class($guapi.lock);
+});
 
 // non-standard functions
 $guapi._check_sync_bridge = async function() {
@@ -92,7 +76,7 @@ $guapi._check_sync_bridge = async function() {
             case "win": base = $guapi.Window;break;
             case "magic": base = $guapi.Magic;break;
             case "mods": base = $guapi.mods;break;
-            case "lock": base = $guapi.lock;break;
+            case "lock": base = $guapi.Lock;break;
             default: method = m;
         }
         check(base, method, m);
@@ -104,6 +88,7 @@ $guapi._add("Var",    "V", import("./submodules/vars.js"));
 $guapi._add("Window", "W", import("./submodules/windows.js"));
 $guapi._add("Magic",  "M", import("./submodules/magic.js"));
 $guapi._add("mods",   "m", import("./submodules/mods.js"));
+$guapi._add("Lock",   "L", import("./submodules/lock.js"));
 
 // final promise
 Promise.all($guapi._promises).then(async function() {
