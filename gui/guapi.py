@@ -463,9 +463,7 @@ class GUAPI(GUAPI_Lock, GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables,
     def synchronize(self, id: str, count: int):
         if id not in self.syncs: self.syncs[id] = 0
         if self.syncs[id] is True: raise SynchronizerError('Synchronizer manually marked invalid (complete?)')
-        self.syncs[id] += 1
-        sync = self.synchronized(id, count)
-        if (sync := self.synchronized(id, count)) != 0: return sync
-        self.mark_synchronizer_invalid(id); return 0 # prevent accidental re-use
+        self.syncs[id] += 1; return self.synchronized(id, count)
     def synchronized(self, id: str, count: int): return 0 if self.syncs[id] is True else self.syncs[id] - count
+    def desynchronize(self, id: str): del self.syncs[id]
     def mark_synchronizer_invalid(self, id: str): self.syncs[id] = True
