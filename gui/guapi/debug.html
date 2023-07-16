@@ -33,9 +33,9 @@
             $e.c_url.textContent = top.location.href;
             $e.c_flg.textContent = `${Array.from(top.$g.flags).map(e => `"${e}"`).join("+") || "{no flags provided}"}`;
             $e.c_inl.textContent = top.___inlined___ ? "yes" : "no";
+            $e.c_min.textContent = top.___minified___ ? "yes" : "no";
             await top.$lang.__ready;
             $e.c_lpk.textContent = `[${top.$l._pack.id}] ${top.$l._pack.name}`;
-            
         };
     </script>
 </head>
@@ -57,6 +57,9 @@
     <div><b>URL:</b> <code id="c_url" >[waiting to load]</code></div>
     <div><b>Lang Pack:</b> <code id="c_lpk">[waiting to load]</code></div>
     <div><b>Flags:</b> <code id="c_flg">[waiting to load]</code></div>
-    <div><b>Inlined:</b> <code id="c_inl">[waiting to load]</code></div>
+    <div>
+        <b>Inlined:</b> <code id="c_inl">[waiting to load]</code>,
+        <b>Minified:</b> <code id="c_min">[waiting to load]</code>
+    </div>
 </body>
 </html>
