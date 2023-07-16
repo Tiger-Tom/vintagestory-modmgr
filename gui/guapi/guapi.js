@@ -57,6 +57,19 @@ Object.assign(globalThis.$guapi, {
     open_dialog: async function(window_id=$wid, dtype /*one of "file", "save", or "folder"*/ = "file", kwargs={}) {
         return await $bridge.open_dialog(window_id, dtype, kwargs);
     },
+    synchronize: function(id, count, wait=5) {
+        if (wait <= 0) throw new TypeError("'wait' must be more than 0");
+        let p = new Promise(async (resolve,reject) => {
+            if (await $bridge.synchronize(id, count) === 0) resolve();
+            async function check() {
+                if (await $bridge.synchronized(id, count) === 0) resolve();
+                else if (p.__cancelled) reject(); 
+                else setTimeout(check, wait*1000);
+            }; check();
+        }); p.cancel = function() { p.__cancelled = true; };
+        p.invalidate = async function() { return await $bridge.mark_synchronizer_invalid(id); }
+        return p;
+    },
 });
 
 // non-standard functions

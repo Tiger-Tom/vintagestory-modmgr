@@ -98,6 +98,8 @@ def CustomErrorDict(err: Exception, supcls=dict):
 class VariableNotFound(KeyError): pass
 class WindowNotFound(KeyError): pass
 class MagicNotFound(KeyError): pass
+class SynchronizerError(Exception): pass
+class SynchronizerNotFound(KeyError, SynchronizerError): pass
 #</Exceptions
 
 #> Bases
@@ -449,8 +451,21 @@ class GUAPI_Lock(GUAPI_Base):
 
 #> GU/API >/
 class GUAPI(GUAPI_Lock, GUAPI_Mods, GUAPI_Magic, GUAPI_Windows, GUAPI_Variables, GUAPI_Base):
-    __slots__ = ()
+    __slots__ = ('syncs',)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.syncs = CustomErrorDict(SynchronizerNotFound, LockedDict)()
     # Directory / file manipulation
     dialog_types = {'file': 'OPEN_DIALOG', 'save': 'SAVE_DIALOG', 'folder': 'FOLDER_DIALOG'}
     def open_dialog(self, wid: str, dtype: str, kwargs: dict[str, typing.Any] = {}):
         return self.windows[wid].create_file_dialog(getattr(self.webview, self.dialog_types[dtype]), **kwargs)
+    # Synchronizer
+    def synchronize(self, id: str, count: int):
+        if id not in self.syncs: self.syncs[id] = 0
+        if self.syncs[id] is True: raise SynchronizerError('Synchronizer manually marked invalid (complete?)')
+        self.syncs[id] += 1
+        sync = self.synchronized(id, count)
+        if (sync := self.synchronized(id, count)) != 0: return sync
+        self.mark_synchronizer_invalid(id); return 0 # prevent accidental re-use
+    def synchronized(self, id: str, count: int): return 0 if self.syncs[id] is True else self.syncs[id] - count
+    def mark_synchronizer_invalid(self, id: str): self.syncs[id] = True
