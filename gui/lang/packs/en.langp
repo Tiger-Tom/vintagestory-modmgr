@@ -24,7 +24,7 @@ bt.reload        = [sy.reload;
  bt.reload.dsc   = Reload the page (application)
 
 bt.sortmods      = [sy.sort;
- bt.sortmods.dsc = Sort the mods in name-order, A-Z
+ bt.sortmods.dsc = Click to sort mods in name-order, A-Z; right-click to sort Z-A
 bt.rmmods        = [sy.trash;
  bt.rmmods.dsc   = Clear the modlist (does not delete mods from the drive until changes are applied!)
 

@@ -28,7 +28,9 @@ bt.find_mods = async function() {
 };
 
 // mods container container buttons
-bt.sort_mods = function() { $mod_h.sort($e.mod_container, "name"); };
+bt.sort_mods = function() { $mod_h.sort($e.mod_container, "name", false); };
+bt.sort_mods.reversed = function(e) { e.preventDefault(); $mod_h.sort($e.mod_container, "name", true); }
+
 bt.clear_mods = function() {
     if (!$l.confirm("[mg.confirm.cmods;")) return;
     for (let m of [...$e.mod_container.getElementsByTagName("li")])
