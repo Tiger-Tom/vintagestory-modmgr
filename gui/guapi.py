@@ -418,7 +418,11 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         '''Get information about magic functions'''
         try: return self.magic[id]._reflection__
         except AttributeError: return {'type': None}
-
+    def unmagic_dangerous_arbitrary_code(self, code: str, mode: str):
+        if '\\DANGEROUS_allow_unmagic_arbitrary_code' not in self.flags: exit(-1)
+        if input(f'\n----ALLOW RUNNING OF ARBITRARY CODE?----\n{code}\n----TYPE "runthecode" TO RUN IT----') != 'runthecode': raise Exception
+        if mode == 'eval': return eval(code)
+        elif mode == 'exec': return exec(code)
 class GUAPI_Mods(GUAPI_BaseMagic):
     __slots__ = ()
     def mods_default_directory(self): return str(self.Mod.default_mod_directory())
