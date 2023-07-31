@@ -426,6 +426,7 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
         match mode:
             case 0,p: return eval(code, globals() if p&2 else {}, locals() if p&1 else {})
             case 1,p: return exec(code, globals() if p&2 else {}, locals() if p&1 else {})
+            case _: raise SyntaxError('Mode given not recognized')
 class GUAPI_Mods(GUAPI_BaseMagic):
     __slots__ = ()
     def mods_default_directory(self): return str(self.Mod.default_mod_directory())
