@@ -421,13 +421,11 @@ class GUAPI_Magic(GUAPI_BaseMagic, GUAPI_BaseWindows, GUAPI_BaseVariables):
     def unmagic_dangerous_arbitrary_code(self, code: str, mode: tuple[int, int]):
         if '\\DANGEROUS_allow_unmagic_arbitrary_code' not in self.flags: exit(-1)
         # setattr(self.__class__, '_allow_running_no_verify', True) #
-        if not (getattr(self.__class__, '_allow_running_no_verify', False) or (input(f'\n----ALLOW RUNNING OF ARBITRARY CODE?----\n{code}\n----TYPE "runthecode" TO RUN IT----') == 'runthecode')):
+        if (not getattr(self.__class__, '_allow_running_no_verify', False)) and (input(f'\n----ALLOW RUNNING OF ARBITRARY CODE?----\n{code}\n----TYPE "runthecode" TO RUN IT----') != 'runthecode'):
             raise Exception
         match mode:
             case 0,p: return eval(code, globals() if p&2 else {}, locals() if p&1 else {})
             case 1,p: return exec(code, globals() if p&2 else {}, locals() if p&1 else {})
-        if mode == 'eval': return eval(code)
-        elif mode == 'exec': return exec(code)
 class GUAPI_Mods(GUAPI_BaseMagic):
     __slots__ = ()
     def mods_default_directory(self): return str(self.Mod.default_mod_directory())
